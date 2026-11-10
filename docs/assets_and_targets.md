@@ -1,6 +1,6 @@
 # Assets and Reference Targets
 
-Version: 0.4 | Date: 2026-11-10
+Version: 0.5 | Date: 2026-11-10
 
 ## 1. Asset pipeline and provenance
 
@@ -33,9 +33,9 @@ Do not require every prop, wall, icon, sound, or VFX texture to have a humanoid 
 
 The default humanoid height is 1.8 m; deliberate exceptions need a recorded profile. Socket names are `SocketHandR`, `SocketHandL`, `SocketHead`, and `SocketBack` where required. Attach a skinned character's sockets to the corresponding bones.
 
-Supported character state names are `idle`, `run`, `dodge`, `attack_1`, `attack_2`, `attack_3`, `hit`, and `death`. Required states are specified per character; a deliberately static dummy does not silently acquire all states. GLB clips use the required state names or an explicitly approved mapping. `AnimationDriver` unifies procedural and clip playback.
+Character state names are snake_case and declared in each character's asset profile, following the GDD (for example `idle`, `run`, `attack_1`, `hit`, `death` in an action game). Required states are specified per character; a deliberately static dummy does not silently acquire all states. GLB clips use the required state names or an explicitly approved mapping. `AnimationDriver` unifies procedural and clip playback.
 
-Attack contact timing remains in `data/tuning.json`. Rendering may retime a clip to the approved action; animation callbacks cannot apply damage. Root motion is disabled for gameplay authority unless the producer approves a new movement contract.
+Gameplay timing, such as when an action makes contact or takes effect, remains in `data/tuning.json`. Rendering may retime a clip to the approved action; animation callbacks cannot change gameplay state. Root motion is disabled for gameplay authority unless the producer approves a new movement contract.
 
 Retain the prototype budgets of at most 5,000 triangles per character and 1,000 per prop. Declare environment and texture budgets in the performance profile before accepting relevant assets. A triangle budget alone does not establish rendering cost or download size.
 
@@ -63,7 +63,7 @@ Keep canonical GLB interchange assets uncompressed. Web-only compression may pro
 
 lookdev owns lighting, shaders, post-processing, and VFX code/data. Store lighting/post parameters in `data/visual/lighting.json` and effect parameters in `data/visual/vfx/<resource_id>.json`. Register their editor panels.
 
-Effects react to discrete events and read-only state; they do not influence gameplay authority. combat owns hitstop and camera-shake intent. Shader files describe their purpose and parameters in English. Record before/after performance measurements across all render passes when adding effects or post-processing.
+Effects react to discrete events and read-only state; they do not influence gameplay authority. gameplay owns the intent of gameplay-driven feedback such as hitstop and camera shake. Shader files describe their purpose and parameters in English. Record before/after performance measurements across all render passes when adding effects or post-processing.
 
 lookdev may generate textures within its approved task, through MCP directly or through a manual request. art_tools owns inbox promotion, manifest entries, credits, and the prompt archive, so include that dependency before declaring the effect asset ready.
 

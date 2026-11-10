@@ -2,13 +2,13 @@
 
 # Claude Code Adapter
 
-Version: 0.4 | Date: 2026-11-10
-Status: Becomes policy with the shared v0.4 package.
+Version: 0.5 | Date: 2026-11-10
+Status: Becomes policy with the shared v0.5 package.
 
 ## Select the actual role
 
 - This file applies to every Claude session that loads it. Do not assume that every session is the lead.
-- A session explicitly assigned `lead` coordinates the team. A session assigned `combat`, `systems`, or `lookdev` follows that role's ownership and task scope. The `deps` subagent follows its own definition only.
+- A session explicitly assigned `lead` coordinates the team. A session assigned `gameplay`, `systems`, or `lookdev` follows that role's ownership and task scope. The `deps` subagent follows its own definition only.
 - If the role is missing or contradictory, ask for the assignment before editing or spawning teammates.
 
 ## Roster and startup verification
@@ -16,7 +16,7 @@ Status: Becomes policy with the shared v0.4 package.
 | Role | Kind | Intended model | Intended effort |
 | --- | --- | --- | --- |
 | lead | Agent Teams lead | `claude-fable-5-2` | high |
-| combat | Agent Teams teammate | `claude-opus-5-5` | high |
+| gameplay | Agent Teams teammate | `claude-opus-5-5` | high |
 | systems | Agent Teams teammate | `claude-opus-5-5` | high |
 | lookdev | Agent Teams teammate | `claude-opus-5-5` | high |
 | deps | Subagent (`.claude/agents/deps.md`) | `claude-haiku-5-5` | default |

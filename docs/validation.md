@@ -1,6 +1,6 @@
 # Validation, Evidence, and Acceptance
 
-Version: 0.4 | Date: 2026-11-10
+Version: 0.5 | Date: 2026-11-10
 The commands below are project interfaces to implement during bootstrap; this document does not claim that they already exist.
 
 ## 1. Retained tests and disposable probes
@@ -12,7 +12,7 @@ Keep only tests that protect behavior the producer would notice if it broke. Com
 | Folder | What to retain |
 | --- | --- |
 | `smoke/` | App boots to controllable gameplay; the current milestone's loop runs end to end |
-| `combat/` | Combo, cancel, buffer, and invulnerability windows; action transitions; contact timing |
+| `mechanics/` | Rules and timing windows of the core mechanic as the GDD defines them (for example combo or cancel windows, puzzle rule resolution, card effect order); state transitions; contact or trigger timing |
 | `editor/` | Preview, save, reload, stale-save conflict, hot reload, protected producer values |
 | `data/` | Schema and cross-field validation for every editable data file |
 | `replay/` | Deterministic input replay of an approved scenario |

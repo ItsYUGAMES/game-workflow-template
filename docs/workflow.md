@@ -1,7 +1,7 @@
 # Workflow and Ownership
 
-Version: 0.4 | Date: 2026-11-10
-This document becomes normative when the producer adopts the v0.4 package.
+Version: 0.5 | Date: 2026-11-10
+This document becomes normative when the producer adopts the v0.5 package.
 
 ## 1. Roles and decisions
 
@@ -10,7 +10,7 @@ The producer owns the GDD, scope, game design, art direction, binding targets, p
 | Role | Runtime | Intended model and effort | Writes |
 | --- | --- | --- | --- |
 | lead | Claude Code, Agent Teams lead | `claude-fable-5-2`, high | Coordination records and all Git commits |
-| combat, systems, lookdev | Agent Teams teammates | `claude-opus-5-5`, high | Game source in their own paths |
+| gameplay, systems, lookdev | Agent Teams teammates | `claude-opus-5-5`, high | Game source in their own paths |
 | tester | Codex, build worktree | `gpt-6-astra`, high | Retained tests, test fixtures and config, gate runner, completion-hook adapter, performance harness |
 | art_tools | Codex, build worktree | `gpt-6-astra`, medium | Assets, generators, targets, tools in its own paths |
 | reviewer | Codex, review worktree | `gpt-6-astra`, high | Review reports only |
@@ -47,7 +47,7 @@ More specific rows take precedence over broader ones. Unlisted paths need an ass
 | `src/main.ts`, root build and lint config, `package.json` scripts | systems | Composition root; other roles request script changes by task |
 | Dependency entries in `package.json`, `package-lock.json` | deps | Only after lead approval |
 | `.claude/` | systems | Producer-approved settings, hook wiring, and agent definitions only |
-| `src/player/`, `src/camera/`, `src/combat/`, `data/tuning.json` | combat | Simulation and camera adapters stay separate modules |
+| `src/player/`, `src/camera/`, `src/mechanics/`, `data/tuning.json` | gameplay | The player's verbs and the core mechanic (combat, puzzle rules, card effects, and so on, per the GDD); simulation and camera adapters stay separate modules |
 | `src/visual/lighting/`, `src/visual/shaders/`, `src/visual/post/`, `src/visual/vfx/`, `data/visual/lighting.json`, `data/visual/vfx/` | lookdev | Lighting, shaders, post-processing, VFX |
 | Remaining `src/visual/` and `data/visual/`, `targets/`, `assets/` (including `assets/prompts/`) | art_tools | Generators, palette, registry, asset promotion, prompt archive |
 | `tests/` (including `tests/regression/` and fixtures), test-runner and Playwright config | tester | The only committed tests |
@@ -83,15 +83,15 @@ Card fields (values are illustrative, not approved design):
 id: T-07
 revision: 1
 milestone: M1
-owner: combat
-gdd_refs: [GDD-COMBAT-03@r2]
+owner: gameplay
+gdd_refs: [GDD-MECH-02@r2]
 depends_on: [T-02]
-allowed_paths: [src/combat/, data/tuning.json]
+allowed_paths: [src/mechanics/, data/tuning.json]
 paired_test_task: T-07t
 acceptance:
-  - Three attacks chain in the input order defined by the referenced GDD section.
-  - Phase timings come from validated tuning data and appear in the tuning panel.
-out_of_scope: [damage_reaction_animation, vfx]
+  - The core verb resolves in the order and under the conditions defined by the referenced GDD section.
+  - Its timings and parameters come from validated tuning data and appear in the tuning panel.
+out_of_scope: [feedback_animation, vfx]
 timing_or_performance: true
 verification_profile: integration
 open_decisions: []
@@ -139,13 +139,13 @@ M0 approves a minimal working slice and stable contract meanings, not every futu
 | Milestone | Required outcome | Producer decision |
 | --- | --- | --- |
 | M0 | App runs; one tunable field previews, saves, reloads, and detects conflicts; gate, commit helper, and snapshot rehearsal work; initial contracts and environment recorded | Accept foundation and initial contract meanings |
-| M1 | Capsule movement, dodge, three attacks, dummy enemy; relevant panels, paired tests, and approved target constraints available | Accept or adjust basic feel |
+| M1 | The core mechanic playable with placeholder visuals: the player's verbs from the approved `MECH` sections and the minimum opposing or interactive element they act on (for example a dummy enemy, one puzzle, one hand of cards); relevant panels, paired tests, and approved target constraints available | Accept or adjust basic feel |
 | M2 | A complete start/play/end loop and one representative level | Continue, revise, or change direction |
-| M3 | Approved content list, levels, enemies, UI, assets, lighting, and VFX present | Accept content and level/visual editing |
+| M3 | Everything on the approved content list present: levels, characters and objects, UI, assets, lighting, and VFX, as far as the GDD calls for them | Accept content and level/visual editing |
 | M4 | Agreed feel and performance criteria pass; all blocking defects resolved | Explicitly accept any deferred non-blocking issue |
 | M5 | Features frozen; final build, recording, report, replacement manifest, and portable exports exist | Accept the final revision and authorize port planning |
 
-Before M1 implementation, approved GDD sections must specify platform and input, camera, movement and collision, attack/buffer/cancel behavior, hitstop and pause behavior, the success/failure loop, and provisional tolerances. Owners may prototype alternatives while these are open, but may not call an invented default approved.
+Before a milestone's implementation starts, every GDD section marked `needed_by` that milestone or earlier must have `status: approved` ([traceability](traceability.md) §1). The template (`docs/gdd/`) marks these sections `needed_by: M1`: the concept, the core loop, the success/failure loop, platform, input, camera or view, the player's verbs, the core rules, time behavior (pause, turns, and any time scaling), the feedback the mechanic depends on, and provisional tolerances. Genre-specific requirements (for example buffer and cancel windows in an action game, or turn order in a card game) are added by the producer as further `MECH` sections with their own `needed_by`. Owners may prototype alternatives while these are open, but may not call an invented default approved.
 
 Milestone close:
 

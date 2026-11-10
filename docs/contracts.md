@@ -1,6 +1,6 @@
 # Architecture, Data, and Editor Contracts
 
-Version: 0.4 | Date: 2026-11-10
+Version: 0.5 | Date: 2026-11-10
 This is a proposed contract design, not evidence that these interfaces already exist.
 
 ## 1. Dependencies and runtime flow
@@ -8,10 +8,10 @@ This is a proposed contract design, not evidence that these interfaces already e
 `src/core/` contains portable types, schemas, event contracts, entity IDs, simulation clock contracts, and seeded RNG utilities. It does not import gameplay, UI, rendering, or the editor.
 
 - Simulation modules consume validated data and commands, own authoritative state, and publish discrete events. They do not import `src/ui/`, `src/visual/`, `src/editor/`, or rendering objects.
-- Presentation consumes events plus a read-only state view through core interfaces. Position, facing, health, and current action must have a defined query/snapshot path; do not encode every transform update as an allocated event.
+- Presentation consumes events plus a read-only state view through core interfaces. Whatever state presentation needs each frame (for example position, facing, health, current action, or board state) must have a defined query/snapshot path; do not encode every transform update as an allocated event.
 - Events describe facts such as `attack_started` or `hit_landed`. User input and editor requests enter through command/data boundaries, not presentation writes to simulation state.
 - `src/main.ts` is the composition root. systems wires simulation, presentation adapters, camera, UI, and development-only panels there.
-- `src/camera/` may contain a presentation adapter owned by combat. Gameplay cannot import that adapter; camera-shake intent must cross the approved contract boundary.
+- `src/camera/` may contain a presentation adapter owned by gameplay. Gameplay cannot import that adapter; camera-shake intent must cross the approved contract boundary.
 - Colocated `*_panel.ts` files are editor adapters, not gameplay modules. Load them only through development composition so production cannot reach editor code transitively.
 
 Before M1, systems publishes tested minimal contracts for entity lifecycle, read-only state access, commands, events, time, and data changes. Each event specifies payload, units, source entity, simulation tick/time, ordering, lifetime, and subscription cleanup. Subscribers must not mutate payloads or rely on undocumented dispatch order.
@@ -32,7 +32,7 @@ M0 freezes the initial meaning and compatibility rules of the contracts. It does
 
 Use seconds and a documented simulation clock. Seeded randomness alone does not provide a reproducible gameplay replay.
 
-Before gameplay timing depends on it, approve and record the simulation tick policy, step size, catch-up cap, pause/background-tab behavior, hitstop behavior, and input sampling order. A fixed-step simulation with separate render interpolation is the recommended design; exact values remain a project decision, not an inferred requirement.
+Before gameplay timing depends on it, approve and record the simulation tick policy, step size, catch-up cap, pause/background-tab behavior, any time scaling the GDD calls for (such as hitstop or slow motion), and input sampling order. Turn-based or event-driven games still record how turns or steps map to simulation time. A fixed-step simulation with separate render interpolation is the recommended design; exact values remain a project decision, not an inferred requirement.
 
 Record replay inputs by simulation tick and include the data/contract revision. Keep independent RNG streams for gameplay, assets, and visual effects so changing a particle count cannot change an enemy spawn. Document stream seeding and reset behavior. App-controlled random decisions use seeded RNG, not `Math.random()`.
 
@@ -58,7 +58,7 @@ The coordinate system is right-handed, +Y up, one unit per meter. Imported model
 
 Runtime calculations use seconds and radians. Persisted measurements use unit suffixes: `_m`, `_s`, `_deg` or `_rad`, `_mps`, `_deg_per_s` or `_rad_per_s`. Convert at the data boundary. `turn_speed_deg` is not a valid angular-speed field. IDs, booleans, counts (`_count`), ratios (`_ratio`), and colors use their own declared type rather than fake physical units.
 
-Keep gameplay tuning, collision dimensions, hurtboxes, attack phases, and contact times in validated data. Named algorithmic constants and mathematical factors may remain in code; not every literal belongs in an editor.
+Keep gameplay tuning in validated data: for example collision dimensions, hurtboxes, action phases, contact times, timers, scoring, and rule parameters. Named algorithmic constants and mathematical factors may remain in code; not every literal belongs in an editor.
 
 ## 5. Data metadata and application timing
 
@@ -69,13 +69,13 @@ Supported application policies:
 | Policy | Meaning | Typical use |
 | --- | --- | --- |
 | `next_tick` | Apply one validated revision at the next simulation/render boundary | Simple speed or lighting adjustments |
-| `next_action` | Existing action retains its captured revision; next action gets new values | Attack phases, cancel windows, contact times |
+| `next_action` | Existing action retains its captured revision; next action gets new values | Action phases, timing windows, contact times, the rules of an action already in progress |
 | `rebuild` | Rebuild once from the latest valid revision, then swap and release old owned resources | Geometry and expensive visual structures |
 | `restart` | Show that preview requires restarting the affected level/session | Structural level or incompatible configuration changes |
 
-The panel displays the policy and any pending change. An agent must not promise next-frame application for every field. For one active attack, windup, active, recovery, cancellation, and contact timing must come from the same data revision. The producer approves any different semantics.
+The panel displays the policy and any pending change. An agent must not promise next-frame application for every field. For one action in progress, every phase, window, and contact time it uses (for an attack: windup, active, recovery, cancellation, and contact) must come from the same data revision. The producer approves any different semantics.
 
-Validation includes cross-field rules, such as non-negative phase lengths, explicit inclusive/exclusive interval boundaries, a contact time within its intended attack phase, and cancellation windows inside the approved action timeline. The brief defines gameplay meaning; a schema must not invent it.
+Validation includes cross-field rules, such as non-negative phase lengths, explicit inclusive/exclusive interval boundaries, a contact time within its intended action phase, and timing windows inside the approved action timeline. The brief defines gameplay meaning; a schema must not invent it.
 
 ## 6. Editor save and hot reload
 

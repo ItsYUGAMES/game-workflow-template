@@ -1,6 +1,20 @@
-# 工作流规范 v0.4
+# 工作流规范 v0.5
 
-日期：2026-11-10。以 GPT-6 审查的 v0.3 为底子，合并了你在 2026-11-10 做的决定。你确认采用后，它就成为项目规则。
+日期：2026-11-10。v0.5 在 v0.4 的基础上去掉了对游戏类型的预设，并加了 GDD 骨架。你确认采用后，它就成为项目规则。
+
+## 相对 v0.4 改了什么（v0.5）
+
+| 改动 | 写进了哪里 |
+| --- | --- |
+| `combat` 队友改名为 `gameplay`，负责玩家动作和核心机制，不限于战斗；`src/combat/` 改为 `src/mechanics/` | `AGENTS.md`、`CLAUDE.md`、`workflow.md` §1–2、`contracts.md` §1、`assets_and_targets.md` §5 |
+| M1 不再写死"移动、闪避、三段攻击、木桩敌人"，改为"核心机制用占位画面可玩" | `workflow.md` §5 |
+| M1 前必须批准的 GDD 内容改为通用清单；类型专属的规则由你按需加成新段落 | `workflow.md` §5、`docs/gdd/index.md` |
+| GDD 段落新增 `status: draft / approved / retired` 和 `needed_by: <里程碑>`；`gdd:check -- --milestone <Mn>` 列出还没批准的段落 | `traceability.md` §1、§3 |
+| 保留测试的 `combat/` 文件夹改为 `mechanics/` | `validation.md` §1 |
+| 时钟、数值生效时机、角色动画状态的说明里，攻击相关的内容改成举例，并补上回合制的情况 | `contracts.md` §3–5、`assets_and_targets.md` §2 |
+| 新增 GDD 骨架：7 个领域、23 个段落，全部是 `draft` | `docs/gdd/` |
+
+技术栈（Three.js 原型 → Godot 移植）、角色分工、提交与 gate、证据和审查规则都没有变。
 
 ## 文件
 
@@ -13,6 +27,7 @@
 | `docs/assets_and_targets.md` | 资产规范、Blender、灯光特效、目标包、Godot 交接 |
 | `docs/validation.md` | 保留测试、gate 与钩子、完成定义、证据、审查、性能 |
 | `docs/traceability.md` | 新增：GDD 编号与 `gdd_refs`、影响分析、提示词归档 |
+| `docs/gdd/` | v0.5 新增：通用 GDD 骨架，`index.md` 是入口 |
 
 入口文件和契约文档按你的全局约定用英文写。GDD、任务说明、handoff、审查报告、说明文档可以用中文。
 
@@ -47,4 +62,4 @@ v0.3 中保留不变的部分：代码分层与状态视图、core 的兼容性�
 
 - 这是规范文档，没有实现提交脚本、gate、钩子适配器、编辑器、`gdd:impact`、deps 定义文件、tester 的角色卡或游戏代码。这些在 M0 由对应角色完成，`validation.md` §7 列出了要演练的步骤。
 - 没有在真实环境里验证 Agent Teams 队友能否调用子 Agent。如果不能，按规则由 lead 调用 deps。
-- GDD 的领域划分（`docs/gdd/index.md`）和性能测量设备，需要你在用到之前定下来。
+- `docs/gdd/` 提供了默认的领域划分，每个项目开工时按需增删。性能测量设备需要你在用到之前定下来。

@@ -1,27 +1,31 @@
 # Design Traceability and Prompt Archive
 
-Version: 0.4 | Date: 2026-11-10
+Version: 0.5 | Date: 2026-11-10
 
 This document defines two things. First, how a change to one GDD section finds every task, asset, target, data field, and retained test that depends on it, so only the affected work is redone. Second, how every generated asset keeps the exact prompt, model, and inputs that produced it.
 
 ## 1. GDD section IDs
 
-The producer owns the GDD under `docs/gdd/`, split into Markdown files by area (for example `docs/gdd/combat.md`). `docs/gdd/index.md` lists the areas and their files. Every section that can drive work starts like this:
+The producer owns the GDD under `docs/gdd/`, split into Markdown files by area (for example `docs/gdd/mechanics.md`). `docs/gdd/index.md` lists the areas and their files. The template ships a genre-neutral skeleton; the producer may add, rename, or drop areas before the first section is referenced. Every section that can drive work starts like this:
 
 ```markdown
-## GDD-COMBAT-03 Three-hit combo
+## GDD-MECH-02 Core rules
 revision: 2
+status: approved
+needed_by: M1
 ```
 
 - ID format: `GDD-<AREA>-<nn>`. The area is an uppercase word from the index; the number has two digits.
 - IDs are permanent. Never renumber or reuse an ID. A removed section keeps its heading, gains `status: retired`, and names its replacement if there is one.
+- `status` is `draft`, `approved`, or `retired`. Only the producer sets `approved`. A `draft` section may guide prototypes but is not approved design.
+- `needed_by` (optional) names the milestone whose implementation needs the section approved (workflow.md §5).
 - Raise `revision` by one whenever the meaning of the section changes. Typo and formatting fixes keep the revision.
-- Section text may be Chinese. The ID, `revision`, and `status` lines stay in English so tools can parse them.
+- Section text may be Chinese. The ID, `revision`, `status`, and `needed_by` lines stay in English so tools can parse them.
 - Agents may draft GDD changes in a handoff. Only the producer edits `docs/gdd/`.
 
 ## 2. Where references appear
 
-A reference is `GDD-<AREA>-<nn>@r<revision>`, for example `GDD-COMBAT-03@r2`. It records the revision the work was based on.
+A reference is `GDD-<AREA>-<nn>@r<revision>`, for example `GDD-MECH-02@r2`. It records the revision the work was based on.
 
 | Record | Field | Written by |
 | --- | --- | --- |
@@ -40,7 +44,7 @@ Work not driven by any GDD section, such as tooling or infrastructure, uses `gdd
 
 art_tools implements two commands under `tools/trace/`:
 
-- `npm run gdd:check` runs in the gate. It fails when a Codex card, handoff, manifest entry, target, or retained test names an unknown GDD ID, or when a gameplay, content, or asset record has no reference. A reference to an older revision is reported as a warning, not a failure.
+- `npm run gdd:check` runs in the gate. It fails when a Codex card, handoff, manifest entry, target, or retained test names an unknown GDD ID, or when a gameplay, content, or asset record has no reference. A reference to an older revision or to a `draft` section is reported as a warning, not a failure. With `-- --milestone <Mn>` it also lists every section with `needed_by` at or before that milestone that is not yet `approved`; the lead runs this before dispatching a milestone's first implementation task.
 - `npm run gdd:impact -- <GDD-ID>` scans every record type in section 2 and prints three groups: `current` (references the section's current revision), `stale` (references an older revision), and `orphan` (references a retired or unknown ID).
 
 Open Claude tasks live in the Agent Teams task list, which these tools do not read. Finished Claude tasks are covered through their handoffs. While a Claude task is still open, the lead checks the task list for the affected ID by hand.
