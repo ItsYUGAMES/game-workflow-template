@@ -1,6 +1,6 @@
 # Validation, Evidence, and Acceptance
 
-Version: 0.6 | Date: 2026-11-10
+Version: 0.7 | Date: 2026-11-10
 The commands below are project interfaces to implement during bootstrap; this document does not claim that they already exist.
 
 ## 1. Retained tests and disposable probes

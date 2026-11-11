@@ -1,7 +1,7 @@
 # Workflow and Ownership
 
-Version: 0.6 | Date: 2026-11-10
-This document becomes normative when the producer adopts the v0.6 package.
+Version: 0.7 | Date: 2026-11-10
+This document becomes normative when the producer adopts the v0.7 package.
 
 ## 1. Roles and decisions
 
@@ -139,15 +139,15 @@ M0 approves a minimal working slice and stable contract meanings, not every futu
 | Milestone | Required outcome | Producer decision |
 | --- | --- | --- |
 | M0 | App runs; one tunable field previews, saves, reloads, and detects conflicts; gate, commit helper, and snapshot rehearsal work; initial contracts and environment recorded | Accept foundation and initial contract meanings |
-| M1 | The core mechanic playable with placeholder visuals: the player's verbs from the approved one-page GDD and core system documents, and the minimum opposing or interactive element they act on (for example a dummy enemy, one puzzle, one hand of cards); relevant panels, paired tests, and approved target constraints available | Accept or adjust basic feel |
+| M1 | The core mechanic playable with placeholder visuals: the player's verbs from the approved one-page GDD and core gameplay system documents, and the minimum opposing or interactive element they act on (for example a dummy enemy, one puzzle, one hand of cards); relevant panels, paired tests, and approved target constraints available | Accept or adjust basic feel |
 | M2 | A complete start/play/end loop and one representative level | Continue, revise, or change direction |
 | M3 | Everything on the approved content list present: levels, characters and objects, UI, assets, lighting, and VFX, as far as the GDD calls for them | Accept content and level/visual editing |
 | M4 | Agreed feel and performance criteria pass; all blocking defects resolved | Explicitly accept any deferred non-blocking issue |
 | M5 | Features frozen; final build, recording, report, replacement manifest, and portable exports exist | Accept the final revision and authorize port planning |
 
-Before a milestone's implementation starts, every GDD document with `needed_by` at or before that milestone must have `status: approved` ([traceability](traceability.md) §1). Before M1, the approved one-page GDD and the system documents marked `needed_by: M1` must together cover the concept, the core loop, the success/failure loop, platform, input, camera or view, time behavior (pause, turns, and any time scaling), the player's verbs and core rules, the feedback those rules depend on, and provisional tolerances. The writing guide (`docs/templates/gdd_guide.md`) shows where each item goes. A rule too vague for tester to test belongs in a system document, even if the one page mentions it. Genre-specific rules (for example buffer and cancel windows in an action game, or turn order in a card game) go into the relevant system document. Owners may prototype alternatives while these are open, but may not call an invented default approved.
+Before a milestone's implementation starts, every GDD document with `needed_by` at or before that milestone must have `status: approved` ([traceability](traceability.md) §1). Before M1, the approved one-page GDD and the detail documents marked `needed_by: M1` must together cover the concept, the core loop, the success/failure loop, platform, input, camera or view, time behavior (pause, turns, and any time scaling), the player's verbs and core rules, the feedback those rules depend on, and provisional tolerances. The writing guide (`docs/templates/gdd_guide.md`) shows where each item goes. A rule too vague for tester to test belongs in a detail document, even if the one page mentions it. Genre-specific rules (for example buffer and cancel windows in an action game, or turn order in a card game) go into the relevant gameplay system document. Owners may prototype alternatives while these are open, but may not call an invented default approved.
 
-After M1, development continues system by system. Before the first implementation task for a system, the producer approves that system's document under `docs/gdd/systems/`; gameplay and content tasks then reference that document in `gdd_refs`, not only `GDD-ONE_PAGE`. The one-page GDD stays current as the summary and index; detail goes into the system documents.
+After M1, development continues piece by piece. Before the first implementation task for a gameplay system, a set of screens, a level, the content plan, or the art and audio set, the producer approves its detail document under `docs/gdd/` (`systems/`, `ui/`, `levels/`, `content/`, or `art/`, from the matching template); tasks then reference that document in `gdd_refs`, not only `GDD-ONE_PAGE`. The one-page GDD stays current as the summary and index; detail goes into the detail documents.
 
 Milestone close:
 

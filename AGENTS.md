@@ -1,6 +1,6 @@
 # AGENTS.md — Shared Project Rules
 
-Version: 0.6 | Date: 2026-11-10 | Scope: Three.js prototype
+Version: 0.7 | Date: 2026-11-10 | Scope: Three.js prototype
 Status: Incorporates the producer's decisions of 2026-11-10. Becomes project policy when the producer adopts this package.
 
 ## Authority and purpose

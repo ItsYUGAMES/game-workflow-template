@@ -2,8 +2,8 @@
 
 # Claude Code Adapter
 
-Version: 0.6 | Date: 2026-11-10
-Status: Becomes policy with the shared v0.6 package.
+Version: 0.7 | Date: 2026-11-10
+Status: Becomes policy with the shared v0.7 package.
 
 ## Select the actual role
 

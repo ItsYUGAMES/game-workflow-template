@@ -1,6 +1,14 @@
-# 工作流规范 v0.6
+# 工作流规范 v0.7
 
-日期：2026-11-10。v0.6 把 GDD 改成“开工用一页策划，持续开发用多篇系统策划案”，并按人的阅读和维护习惯重写了写法。你确认采用后，它就成为项目规则。
+日期：2026-11-10。GDD 分两个阶段：开工用一页策划，持续开发用多篇细则文档，细则按内容分五类，各有模板。你确认采用后，它就成为项目规则。
+
+## 相对 v0.6 改了什么（v0.7）
+
+| 改动 | 写进了哪里 |
+| --- | --- |
+| 细则文档分五类，各有模板：玩法系统、界面与流程、关卡、内容与进度、美术与音频；分别放在 `docs/gdd/` 下的 `systems/`、`ui/`、`levels/`、`content/`、`art/` | `docs/templates/gdd_*.md`、`docs/templates/gdd_guide.md` 一、三 |
+| 一页策划里的“系统与待定”改名为“细则与待定”，列出所有类型的细则 | `docs/gdd/one_page.md` |
+| M1 之后，每块要开发的内容（不只是玩法系统）都先写细则、批准后再拆任务；`docs/gdd/` 里文件名不能重复，`gdd:check` 检查重复编号 | `workflow.md` §5、`traceability.md` §1、§3 |
 
 ## 相对 v0.5 改了什么（v0.6）
 
@@ -39,10 +47,14 @@
 | `docs/assets_and_targets.md` | 资产规范、Blender、灯光特效、目标包、Godot 交接 |
 | `docs/validation.md` | 保留测试、gate 与钩子、完成定义、证据、审查、性能 |
 | `docs/traceability.md` | 新增：GDD 编号与 `gdd_refs`、影响分析、提示词归档 |
-| `docs/gdd/one_page.md` | 一页策划空白稿，直接填写；`docs/gdd/systems/` 放需要展开的系统策划案 |
+| `docs/gdd/one_page.md` | 一页策划空白稿，直接填写；`systems/`、`ui/`、`levels/`、`content/`、`art/` 放各类细则文档 |
 | `docs/templates/gdd_guide.md` | GDD 写法说明：文档组成、编号、写法要点、M1 前要写清什么、批准前自查 |
-| `docs/templates/gdd_system.md` | 系统策划案模板，每个系统复制一份 |
-| `docs/examples/gdd_example/` | 填好的 GDD 示例《守灯人》：一页策划、三篇系统策划案、关键画面和示意图 |
+| `docs/templates/gdd_system.md` | 细则模板：玩法系统 |
+| `docs/templates/gdd_ui.md` | 细则模板：界面与流程 |
+| `docs/templates/gdd_level.md` | 细则模板：关卡 |
+| `docs/templates/gdd_content.md` | 细则模板：内容与进度 |
+| `docs/templates/gdd_art_audio.md` | 细则模板：美术与音频 |
+| `docs/examples/gdd_example/` | 填好的 GDD 示例《守灯人》：一页策划、三篇玩法系统策划案、关键画面和示意图 |
 
 入口文件和契约文档按你的全局约定用英文写。GDD、任务说明、handoff、审查报告、说明文档可以用中文。
 
@@ -77,4 +89,4 @@ v0.3 中保留不变的部分：代码分层与状态视图、core 的兼容性�
 
 - 这是规范文档，没有实现提交脚本、gate、钩子适配器、编辑器、`gdd:impact`、deps 定义文件、tester 的角色卡或游戏代码。这些在 M0 由对应角色完成，`validation.md` §7 列出了要演练的步骤。
 - 没有在真实环境里验证 Agent Teams 队友能否调用子 Agent。如果不能，按规则由 lead 调用 deps。
-- `docs/gdd/` 只有一页策划空白稿，系统策划案按需要用模板新建。性能测量设备需要你在用到之前定下来。
+- `docs/gdd/` 只有一页策划空白稿和五个空的细则目录，细则文档按需要用模板新建。性能测量设备需要你在用到之前定下来。

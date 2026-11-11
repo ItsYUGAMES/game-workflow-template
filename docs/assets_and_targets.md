@@ -1,6 +1,6 @@
 # Assets and Reference Targets
 
-Version: 0.6 | Date: 2026-11-10
+Version: 0.7 | Date: 2026-11-10
 
 ## 1. Asset pipeline and provenance
 

@@ -1,6 +1,6 @@
 # Design Traceability and Prompt Archive
 
-Version: 0.6 | Date: 2026-11-10
+Version: 0.7 | Date: 2026-11-10
 
 This document defines two things. First, how a change to one GDD document finds every task, asset, target, data field, and retained test that depends on it, so only the affected work is redone. Second, how every generated asset keeps the exact prompt, model, and inputs that produced it.
 
@@ -8,8 +8,8 @@ This document defines two things. First, how a change to one GDD document finds 
 
 The producer owns the GDD under `docs/gdd/`. It is written for people first, following the writing guide in `docs/templates/gdd_guide.md`:
 
-- `docs/gdd/one_page.md`: the one-page GDD (一页策划). It is the kickoff document: it describes the whole game on one page (at most 700 Chinese characters of body text plus one key image). After M1 it stays current as the summary and index of the system documents.
-- `docs/gdd/systems/<name>.md`: short system documents (系统策划案), started from `docs/templates/gdd_system.md`. At kickoff, only core rules that the one page cannot state testably get one. After M1, every system under development gets one before its first implementation task.
+- `docs/gdd/one_page.md`: the one-page GDD (一页策划). It is the kickoff document: it describes the whole game on one page (at most 700 Chinese characters of body text plus one key image). After M1 it stays current as the summary and index of the detail documents.
+- Detail documents (细则文档) in five folders, each started from its template in `docs/templates/`: `systems/` (gameplay systems, `gdd_system.md`), `ui/` (UI and flow, `gdd_ui.md`), `levels/` (levels, `gdd_level.md`), `content/` (content and progression, `gdd_content.md`), and `art/` (art and audio, `gdd_art_audio.md`). At kickoff, only core rules that the one page cannot state testably get one. After M1, every piece of work under development gets one before its first implementation task.
 - `docs/gdd/images/<name>/`: diagrams, mockups, and reference images used by those documents.
 
 Each document starts with a front-matter block. It is the only machine-readable part; headings and body follow normal Chinese document conventions.
@@ -23,12 +23,12 @@ needed_by: M1
 ---
 ```
 
-- `id` is `GDD-` plus the file name in uppercase (`one_page.md` → `GDD-ONE_PAGE`, `systems/relight.md` → `GDD-RELIGHT`). IDs are permanent: once a document is referenced, never rename its file or reuse its ID. A removed document keeps its file with `status: retired` and names its replacement, if any.
+- `id` is `GDD-` plus the file name in uppercase (`one_page.md` → `GDD-ONE_PAGE`, `systems/relight.md` → `GDD-RELIGHT`). File names must be unique across `docs/gdd/`. IDs are permanent: once a document is referenced, never rename its file or reuse its ID. A removed document keeps its file with `status: retired` and names its replacement, if any.
 - `status` is `draft`, `approved`, or `retired`. Only the producer sets `approved`. A `draft` document may guide prototypes but is not approved design.
 - `needed_by` (optional) names the milestone whose implementation needs the document approved (workflow.md §5).
 - Raise `revision` by one whenever the meaning of the document changes, and add a matching row to the document's change log (修改记录) that names the parts that changed. Typo and formatting fixes keep the revision.
 - Chapter numbers (一、, 2.2, list items) may shift as a document is edited, so they are not trace keys. Task acceptance text may cite them for readers, for example `GDD-RELIGHT §2.2(3)`.
-- The one-page GDD's system list links every system document and shows its status and `needed_by`; the front matter is authoritative.
+- The one-page GDD's detail list (细则与待定) links every detail document and shows its status and `needed_by`; the front matter is authoritative.
 - Agents may draft GDD changes in a handoff. Only the producer edits `docs/gdd/`.
 - Only Markdown files under `docs/gdd/` define IDs. `docs/templates/` and `docs/examples/` are ignored by the trace tools; never cite their IDs in `gdd_refs`.
 
@@ -53,7 +53,7 @@ Work not driven by any GDD document, such as tooling or infrastructure, uses `gd
 
 art_tools implements two commands under `tools/trace/`:
 
-- `npm run gdd:check` runs in the gate. It fails when a Codex card, handoff, manifest entry, target, or retained test names an unknown GDD ID, or when a gameplay, content, or asset record has no reference. It also fails when a GDD document has missing or malformed front matter, or when the one-page GDD's system list is missing a system document or disagrees with its front matter. It warns when the one-page GDD exceeds 700 Chinese characters of body text. A reference to an older revision or to a `draft` document is reported as a warning, not a failure. With `-- --milestone <Mn>` it also lists every document with `needed_by` at or before that milestone that is not yet `approved`; the lead runs this before dispatching a milestone's first implementation task.
+- `npm run gdd:check` runs in the gate. It fails when a Codex card, handoff, manifest entry, target, or retained test names an unknown GDD ID, or when a gameplay, content, or asset record has no reference. It also fails when a GDD document has missing or malformed front matter, when two documents share an ID, or when the one-page GDD's detail list is missing a detail document or disagrees with its front matter. It warns when the one-page GDD exceeds 700 Chinese characters of body text. A reference to an older revision or to a `draft` document is reported as a warning, not a failure. With `-- --milestone <Mn>` it also lists every document with `needed_by` at or before that milestone that is not yet `approved`; the lead runs this before dispatching a milestone's first implementation task.
 - `npm run gdd:impact -- <GDD-ID>` scans every record type in section 2 and prints three groups: `current` (references the document's current revision), `stale` (references an older revision), and `orphan` (references a retired or unknown ID).
 
 Open Claude tasks live in the Agent Teams task list, which these tools do not read. Finished Claude tasks are covered through their handoffs. While a Claude task is still open, the lead checks the task list for the affected ID by hand.
