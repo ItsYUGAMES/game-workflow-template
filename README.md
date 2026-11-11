@@ -1,6 +1,18 @@
-# 工作流规范 v0.5
+# 工作流规范 v0.6
 
-日期：2026-11-10。v0.5 在 v0.4 的基础上去掉了对游戏类型的预设，并加了 GDD 骨架。你确认采用后，它就成为项目规则。
+日期：2026-11-10。v0.6 把 GDD 改成“开工用一页策划，持续开发用多篇系统策划案”，并按人的阅读和维护习惯重写了写法。你确认采用后，它就成为项目规则。
+
+## 相对 v0.5 改了什么（v0.6）
+
+| 改动 | 写进了哪里 |
+| --- | --- |
+| 开工用**一页策划**：一句话、关键画面、玩法、体验、设定、范围、系统与待定，正文不超过 700 个汉字；M1 之后它作为总览和目录保持最新 | `docs/gdd/one_page.md` |
+| 持续开发用多篇两三页的系统策划案：M1 之后每个系统先写、批准后再拆任务，任务引用这篇文档；章节用一、二、/ 1.1 / 1. 编号，配流程图、状态图和示意图 | `docs/templates/gdd_system.md`、`workflow.md` §5 |
+| 编号从“每个段落一个”改成“每篇文档一个”（如 `GDD-RELIGHT@r2`），只放在文档开头的一小段信息里；正文不再有给工具看的字段 | `traceability.md` §1–3 |
+| 每篇文档有修改记录，写清改了哪一块、为什么；lead 按它判断返工范围 | `traceability.md` §1、§3 |
+| M1 前要写清的内容改为“一页策划 + 核心系统策划案合起来覆盖”；tester 没法据此写测试的规则，要写进系统策划案 | `workflow.md` §5、`docs/templates/gdd_guide.md` 六 |
+| 新增写法说明（依据 Librande 的一页设计、Unity 的一页 GDD 模板和国内系统策划案写法，出处附在文末）和一份填好的示例《守灯人》 | `docs/templates/gdd_guide.md`、`docs/examples/gdd_example/` |
+| 删除 v0.5 按领域拆分的 7 个 GDD 骨架文件 | `docs/gdd/` |
 
 ## 相对 v0.4 改了什么（v0.5）
 
@@ -12,7 +24,7 @@
 | GDD 段落新增 `status: draft / approved / retired` 和 `needed_by: <里程碑>`；`gdd:check -- --milestone <Mn>` 列出还没批准的段落 | `traceability.md` §1、§3 |
 | 保留测试的 `combat/` 文件夹改为 `mechanics/` | `validation.md` §1 |
 | 时钟、数值生效时机、角色动画状态的说明里，攻击相关的内容改成举例，并补上回合制的情况 | `contracts.md` §3–5、`assets_and_targets.md` §2 |
-| 新增 GDD 骨架：7 个领域、23 个段落，全部是 `draft` | `docs/gdd/` |
+| 新增 GDD 骨架：7 个领域、23 个段落，全部是 `draft`（v0.6 已替换） | `docs/gdd/` |
 
 技术栈（Three.js 原型 → Godot 移植）、角色分工、提交与 gate、证据和审查规则都没有变。
 
@@ -27,7 +39,10 @@
 | `docs/assets_and_targets.md` | 资产规范、Blender、灯光特效、目标包、Godot 交接 |
 | `docs/validation.md` | 保留测试、gate 与钩子、完成定义、证据、审查、性能 |
 | `docs/traceability.md` | 新增：GDD 编号与 `gdd_refs`、影响分析、提示词归档 |
-| `docs/gdd/` | v0.5 新增：通用 GDD 骨架，`index.md` 是入口 |
+| `docs/gdd/one_page.md` | 一页策划空白稿，直接填写；`docs/gdd/systems/` 放需要展开的系统策划案 |
+| `docs/templates/gdd_guide.md` | GDD 写法说明：文档组成、编号、写法要点、M1 前要写清什么、批准前自查 |
+| `docs/templates/gdd_system.md` | 系统策划案模板，每个系统复制一份 |
+| `docs/examples/gdd_example/` | 填好的 GDD 示例《守灯人》：一页策划、三篇系统策划案、关键画面和示意图 |
 
 入口文件和契约文档按你的全局约定用英文写。GDD、任务说明、handoff、审查报告、说明文档可以用中文。
 
@@ -62,4 +77,4 @@ v0.3 中保留不变的部分：代码分层与状态视图、core 的兼容性�
 
 - 这是规范文档，没有实现提交脚本、gate、钩子适配器、编辑器、`gdd:impact`、deps 定义文件、tester 的角色卡或游戏代码。这些在 M0 由对应角色完成，`validation.md` §7 列出了要演练的步骤。
 - 没有在真实环境里验证 Agent Teams 队友能否调用子 Agent。如果不能，按规则由 lead 调用 deps。
-- `docs/gdd/` 提供了默认的领域划分，每个项目开工时按需增删。性能测量设备需要你在用到之前定下来。
+- `docs/gdd/` 只有一页策划空白稿，系统策划案按需要用模板新建。性能测量设备需要你在用到之前定下来。

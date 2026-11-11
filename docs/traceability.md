@@ -1,31 +1,40 @@
 # Design Traceability and Prompt Archive
 
-Version: 0.5 | Date: 2026-11-10
+Version: 0.6 | Date: 2026-11-10
 
-This document defines two things. First, how a change to one GDD section finds every task, asset, target, data field, and retained test that depends on it, so only the affected work is redone. Second, how every generated asset keeps the exact prompt, model, and inputs that produced it.
+This document defines two things. First, how a change to one GDD document finds every task, asset, target, data field, and retained test that depends on it, so only the affected work is redone. Second, how every generated asset keeps the exact prompt, model, and inputs that produced it.
 
-## 1. GDD section IDs
+## 1. GDD documents and IDs
 
-The producer owns the GDD under `docs/gdd/`, split into Markdown files by area (for example `docs/gdd/mechanics.md`). `docs/gdd/index.md` lists the areas and their files. The template ships a genre-neutral skeleton; the producer may add, rename, or drop areas before the first section is referenced. Every section that can drive work starts like this:
+The producer owns the GDD under `docs/gdd/`. It is written for people first, following the writing guide in `docs/templates/gdd_guide.md`:
+
+- `docs/gdd/one_page.md`: the one-page GDD (一页策划). It is the kickoff document: it describes the whole game on one page (at most 700 Chinese characters of body text plus one key image). After M1 it stays current as the summary and index of the system documents.
+- `docs/gdd/systems/<name>.md`: short system documents (系统策划案), started from `docs/templates/gdd_system.md`. At kickoff, only core rules that the one page cannot state testably get one. After M1, every system under development gets one before its first implementation task.
+- `docs/gdd/images/<name>/`: diagrams, mockups, and reference images used by those documents.
+
+Each document starts with a front-matter block. It is the only machine-readable part; headings and body follow normal Chinese document conventions.
 
 ```markdown
-## GDD-MECH-02 Core rules
+---
+id: GDD-RELIGHT
 revision: 2
 status: approved
 needed_by: M1
+---
 ```
 
-- ID format: `GDD-<AREA>-<nn>`. The area is an uppercase word from the index; the number has two digits.
-- IDs are permanent. Never renumber or reuse an ID. A removed section keeps its heading, gains `status: retired`, and names its replacement if there is one.
-- `status` is `draft`, `approved`, or `retired`. Only the producer sets `approved`. A `draft` section may guide prototypes but is not approved design.
-- `needed_by` (optional) names the milestone whose implementation needs the section approved (workflow.md §5).
-- Raise `revision` by one whenever the meaning of the section changes. Typo and formatting fixes keep the revision.
-- Section text may be Chinese. The ID, `revision`, `status`, and `needed_by` lines stay in English so tools can parse them.
+- `id` is `GDD-` plus the file name in uppercase (`one_page.md` → `GDD-ONE_PAGE`, `systems/relight.md` → `GDD-RELIGHT`). IDs are permanent: once a document is referenced, never rename its file or reuse its ID. A removed document keeps its file with `status: retired` and names its replacement, if any.
+- `status` is `draft`, `approved`, or `retired`. Only the producer sets `approved`. A `draft` document may guide prototypes but is not approved design.
+- `needed_by` (optional) names the milestone whose implementation needs the document approved (workflow.md §5).
+- Raise `revision` by one whenever the meaning of the document changes, and add a matching row to the document's change log (修改记录) that names the parts that changed. Typo and formatting fixes keep the revision.
+- Chapter numbers (一、, 2.2, list items) may shift as a document is edited, so they are not trace keys. Task acceptance text may cite them for readers, for example `GDD-RELIGHT §2.2(3)`.
+- The one-page GDD's system list links every system document and shows its status and `needed_by`; the front matter is authoritative.
 - Agents may draft GDD changes in a handoff. Only the producer edits `docs/gdd/`.
+- Only Markdown files under `docs/gdd/` define IDs. `docs/templates/` and `docs/examples/` are ignored by the trace tools; never cite their IDs in `gdd_refs`.
 
 ## 2. Where references appear
 
-A reference is `GDD-<AREA>-<nn>@r<revision>`, for example `GDD-MECH-02@r2`. It records the revision the work was based on.
+A reference is `GDD-<NAME>@r<revision>`, for example `GDD-RELIGHT@r2`. It records the revision the work was based on.
 
 | Record | Field | Written by |
 | --- | --- | --- |
@@ -38,21 +47,21 @@ A reference is `GDD-<AREA>-<nn>@r<revision>`, for example `GDD-MECH-02@r2`. It r
 | Editable data field metadata | optional `gdd_refs` | data owner |
 | Retained test under `tests/regression/` | `gdd_refs:` in the header comment | tester |
 
-Work not driven by any GDD section, such as tooling or infrastructure, uses `gdd_refs: []` and says why in the task. A gameplay, content, or asset task without a reference is incomplete.
+Work not driven by any GDD document, such as tooling or infrastructure, uses `gdd_refs: []` and says why in the task. A gameplay, content, or asset task without a reference is incomplete.
 
 ## 3. Impact analysis
 
 art_tools implements two commands under `tools/trace/`:
 
-- `npm run gdd:check` runs in the gate. It fails when a Codex card, handoff, manifest entry, target, or retained test names an unknown GDD ID, or when a gameplay, content, or asset record has no reference. A reference to an older revision or to a `draft` section is reported as a warning, not a failure. With `-- --milestone <Mn>` it also lists every section with `needed_by` at or before that milestone that is not yet `approved`; the lead runs this before dispatching a milestone's first implementation task.
-- `npm run gdd:impact -- <GDD-ID>` scans every record type in section 2 and prints three groups: `current` (references the section's current revision), `stale` (references an older revision), and `orphan` (references a retired or unknown ID).
+- `npm run gdd:check` runs in the gate. It fails when a Codex card, handoff, manifest entry, target, or retained test names an unknown GDD ID, or when a gameplay, content, or asset record has no reference. It also fails when a GDD document has missing or malformed front matter, or when the one-page GDD's system list is missing a system document or disagrees with its front matter. It warns when the one-page GDD exceeds 700 Chinese characters of body text. A reference to an older revision or to a `draft` document is reported as a warning, not a failure. With `-- --milestone <Mn>` it also lists every document with `needed_by` at or before that milestone that is not yet `approved`; the lead runs this before dispatching a milestone's first implementation task.
+- `npm run gdd:impact -- <GDD-ID>` scans every record type in section 2 and prints three groups: `current` (references the document's current revision), `stale` (references an older revision), and `orphan` (references a retired or unknown ID).
 
 Open Claude tasks live in the Agent Teams task list, which these tools do not read. Finished Claude tasks are covered through their handoffs. While a Claude task is still open, the lead checks the task list for the affected ID by hand.
 
-When the producer changes a GDD section:
+When the producer changes a GDD document:
 
-1. The producer edits the section, raises its revision, and commits `docs(gdd): <summary>`.
-2. The lead runs `npm run gdd:impact -- <GDD-ID>` and reports the stale records grouped by owner. Each gets a proposed action: rework, keep as is, or retire.
+1. The producer edits the document, raises its revision, adds a change-log row naming the changed parts, and commits `docs(gdd): <summary>`.
+2. The lead runs `npm run gdd:impact -- <GDD-ID>` and reports the stale records grouped by owner. Using the change-log row, each gets a proposed action: rework, keep as is, or retire. A record that depends only on unchanged parts is normally kept.
 3. The producer chooses. The lead creates rework tasks only for the records chosen for rework. Unaffected modules are not regenerated or rewritten.
 4. Reworked records carry the new revision when their tasks finish. Records the producer chose to keep are updated to the new revision by their owner, and the choice is recorded in `docs/decisions.md`.
 
@@ -65,7 +74,7 @@ Store each record at `assets/prompts/<resource_id>/<generation_id>.md`, with YAM
 | Field | Meaning |
 | --- | --- |
 | `generation_id`, `resource_id` | Record identity and the asset it serves |
-| `gdd_refs` | GDD sections this generation implements |
+| `gdd_refs` | GDD documents this generation implements |
 | `requested_by`, `operated_by` | Role that asked; role or `producer` that ran the call |
 | `method` | `mcp`, `api`, or `manual` |
 | `provider`, `model`, `model_version` | As reported by the tool or provider. Write `unknown` when it is not reported; never guess |

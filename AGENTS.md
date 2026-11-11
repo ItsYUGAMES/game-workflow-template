@@ -1,6 +1,6 @@
 # AGENTS.md — Shared Project Rules
 
-Version: 0.5 | Date: 2026-11-10 | Scope: Three.js prototype
+Version: 0.6 | Date: 2026-11-10 | Scope: Three.js prototype
 Status: Incorporates the producer's decisions of 2026-11-10. Becomes project policy when the producer adopts this package.
 
 ## Authority and purpose
@@ -29,7 +29,7 @@ Status: Incorporates the producer's decisions of 2026-11-10. Becomes project pol
 4. The gate runs on a commit in the gate worktree. A pass applies only to that commit SHA.
 5. Preserve producer-approved tuning. Editor saves and external edits detect conflicts instead of overwriting newer values.
 6. No external generation calls from `src/`. Use an MCP tool, a script under `tools/`, or a manual request, and record every call in the prompt archive.
-7. Gameplay, content, and asset work carries `gdd_refs` to the GDD sections it implements.
+7. Gameplay, content, and asset work carries `gdd_refs` to the GDD documents it implements.
 
 ## Decisions and uncertainty
 

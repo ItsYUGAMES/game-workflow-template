@@ -1,7 +1,7 @@
 # Workflow and Ownership
 
-Version: 0.5 | Date: 2026-11-10
-This document becomes normative when the producer adopts the v0.5 package.
+Version: 0.6 | Date: 2026-11-10
+This document becomes normative when the producer adopts the v0.6 package.
 
 ## 1. Roles and decisions
 
@@ -19,7 +19,7 @@ The producer owns the GDD, scope, game design, art direction, binding targets, p
 The producer decided on 2026-11-10:
 
 - The three Claude teammates write the game source. This applies to this project even where a machine-wide default names a different single writer.
-- Testing is independent of implementation. tester (GPT) writes every retained test from the task's acceptance criteria and GDD sections. Implementers never edit tests; tester never edits the source under test.
+- Testing is independent of implementation. tester (GPT) writes every retained test from the task's acceptance criteria and GDD documents. Implementers never edit tests; tester never edits the source under test.
 - The lead makes all Git commits.
 
 Verify each role's actual account, client, model, effort, and tool support before use.
@@ -30,7 +30,7 @@ For a missing decision, record the question, options, recommendation, affected t
 
 Project records:
 
-- `docs/gdd/` (producer): the GDD with permanent section IDs; see [traceability](traceability.md).
+- `docs/gdd/` (producer): the GDD: a one-page GDD plus a short document for each system that needs more detail, with permanent document IDs; see [traceability](traceability.md).
 - `docs/decisions.md` (producer; lead may draft entries for approval): durable approvals and recorded deviations.
 - `tasks/milestones/<milestone>.md` (lead): status, candidate SHAs, and links to the producer's acceptance.
 - `handoff/<role>/environment/<run_id>.md` (each role): dated runtime observations with exact versions.
@@ -84,12 +84,12 @@ id: T-07
 revision: 1
 milestone: M1
 owner: gameplay
-gdd_refs: [GDD-MECH-02@r2]
+gdd_refs: [GDD-CORE_MECHANIC@r2]
 depends_on: [T-02]
 allowed_paths: [src/mechanics/, data/tuning.json]
 paired_test_task: T-07t
 acceptance:
-  - The core verb resolves in the order and under the conditions defined by the referenced GDD section.
+  - The core verb resolves in the order and under the conditions in GDD-CORE_MECHANIC §2.2.
   - Its timings and parameters come from validated tuning data and appear in the tuning panel.
 out_of_scope: [feedback_animation, vfx]
 timing_or_performance: true
@@ -139,13 +139,15 @@ M0 approves a minimal working slice and stable contract meanings, not every futu
 | Milestone | Required outcome | Producer decision |
 | --- | --- | --- |
 | M0 | App runs; one tunable field previews, saves, reloads, and detects conflicts; gate, commit helper, and snapshot rehearsal work; initial contracts and environment recorded | Accept foundation and initial contract meanings |
-| M1 | The core mechanic playable with placeholder visuals: the player's verbs from the approved `MECH` sections and the minimum opposing or interactive element they act on (for example a dummy enemy, one puzzle, one hand of cards); relevant panels, paired tests, and approved target constraints available | Accept or adjust basic feel |
+| M1 | The core mechanic playable with placeholder visuals: the player's verbs from the approved one-page GDD and core system documents, and the minimum opposing or interactive element they act on (for example a dummy enemy, one puzzle, one hand of cards); relevant panels, paired tests, and approved target constraints available | Accept or adjust basic feel |
 | M2 | A complete start/play/end loop and one representative level | Continue, revise, or change direction |
 | M3 | Everything on the approved content list present: levels, characters and objects, UI, assets, lighting, and VFX, as far as the GDD calls for them | Accept content and level/visual editing |
 | M4 | Agreed feel and performance criteria pass; all blocking defects resolved | Explicitly accept any deferred non-blocking issue |
 | M5 | Features frozen; final build, recording, report, replacement manifest, and portable exports exist | Accept the final revision and authorize port planning |
 
-Before a milestone's implementation starts, every GDD section marked `needed_by` that milestone or earlier must have `status: approved` ([traceability](traceability.md) §1). The template (`docs/gdd/`) marks these sections `needed_by: M1`: the concept, the core loop, the success/failure loop, platform, input, camera or view, the player's verbs, the core rules, time behavior (pause, turns, and any time scaling), the feedback the mechanic depends on, and provisional tolerances. Genre-specific requirements (for example buffer and cancel windows in an action game, or turn order in a card game) are added by the producer as further `MECH` sections with their own `needed_by`. Owners may prototype alternatives while these are open, but may not call an invented default approved.
+Before a milestone's implementation starts, every GDD document with `needed_by` at or before that milestone must have `status: approved` ([traceability](traceability.md) §1). Before M1, the approved one-page GDD and the system documents marked `needed_by: M1` must together cover the concept, the core loop, the success/failure loop, platform, input, camera or view, time behavior (pause, turns, and any time scaling), the player's verbs and core rules, the feedback those rules depend on, and provisional tolerances. The writing guide (`docs/templates/gdd_guide.md`) shows where each item goes. A rule too vague for tester to test belongs in a system document, even if the one page mentions it. Genre-specific rules (for example buffer and cancel windows in an action game, or turn order in a card game) go into the relevant system document. Owners may prototype alternatives while these are open, but may not call an invented default approved.
+
+After M1, development continues system by system. Before the first implementation task for a system, the producer approves that system's document under `docs/gdd/systems/`; gameplay and content tasks then reference that document in `gdd_refs`, not only `GDD-ONE_PAGE`. The one-page GDD stays current as the summary and index; detail goes into the system documents.
 
 Milestone close:
 

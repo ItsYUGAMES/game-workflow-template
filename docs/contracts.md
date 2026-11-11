@@ -1,6 +1,6 @@
 # Architecture, Data, and Editor Contracts
 
-Version: 0.5 | Date: 2026-11-10
+Version: 0.6 | Date: 2026-11-10
 This is a proposed contract design, not evidence that these interfaces already exist.
 
 ## 1. Dependencies and runtime flow
@@ -62,7 +62,7 @@ Keep gameplay tuning in validated data: for example collision dimensions, hurtbo
 
 ## 5. Data metadata and application timing
 
-Each editable schema declares `schema_version`, type, units, range, step, dependencies, default, persistence path, owner, `apply_policy`, and `gdd_refs` where a GDD section defines the field ([traceability](traceability.md)). Unknown versions or invalid changes produce an actionable error and leave the last valid state intact.
+Each editable schema declares `schema_version`, type, units, range, step, dependencies, default, persistence path, owner, `apply_policy`, and `gdd_refs` where a GDD document defines the field ([traceability](traceability.md)). Unknown versions or invalid changes produce an actionable error and leave the last valid state intact.
 
 Supported application policies:
 

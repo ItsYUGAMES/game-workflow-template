@@ -2,8 +2,8 @@
 
 # Claude Code Adapter
 
-Version: 0.5 | Date: 2026-11-10
-Status: Becomes policy with the shared v0.5 package.
+Version: 0.6 | Date: 2026-11-10
+Status: Becomes policy with the shared v0.6 package.
 
 ## Select the actual role
 
@@ -38,7 +38,7 @@ Status: Becomes policy with the shared v0.5 package.
 - Make every Git commit. When an owner reports a task ready, run `npm run commit:task -- <task_id>`, inspect the staged diff against the card, confirm, and report the SHA (Claude: `commit:` line in the task; Codex: card log). Commit deps changes the same way, and producer tuning or GDD edits when the producer asks.
 - Maintain coordination records and draft reports. Do not edit application code, tests, package files, or producer-owned policy.
 - Approve dependency requests by package and exact version, then have systems invoke the `deps` subagent. If teammates cannot start subagents in this runtime, invoke `deps` yourself.
-- When the producer changes a GDD section, run `npm run gdd:impact`, report stale records by owner with a proposed action, and create rework tasks only for what the producer chooses.
+- When the producer changes a GDD document, run `npm run gdd:impact`, report stale records by owner with a proposed action, and create rework tasks only for what the producer chooses.
 - Check the handoff and commit of the actual dependency owner before dispatching dependent work.
 - Review art_tools and tester changes at each candidate. Route behavior-changing commits to the reviewer; data-only commits need the gate only.
 - Convert accepted findings into tasks. Resolve or explicitly defer blocking findings before requesting milestone acceptance.

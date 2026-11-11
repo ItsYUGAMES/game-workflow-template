@@ -1,6 +1,6 @@
 # Assets and Reference Targets
 
-Version: 0.5 | Date: 2026-11-10
+Version: 0.6 | Date: 2026-11-10
 
 ## 1. Asset pipeline and provenance
 
@@ -13,7 +13,7 @@ Asset IDs use prefixes `chr`, `enm`, `prp`, `env`, `wpn`, `fx`, `ui`, `sfx`, `mu
 - `id`, `kind`, `source` (`procedural`, `generated`, `pack`, or `manual`), and file or generator path;
 - content revision/hash, generator parameter/seed reference where applicable, and schema version;
 - measured triangles, texture dimensions/formats, required clips, socket profile, and pivot/orientation profile, where applicable;
-- `gdd_refs` for the GDD sections the asset serves;
+- `gdd_refs` for the GDD documents the asset serves;
 - for generated assets, `prompt_record` pointing to the accepted record in `assets/prompts/`; for packs and manual work, source URL, acquisition date, and license or usage evidence;
 - source-file path, such as the `.blend`;
 - replacement priority and reference links once the M5 replacement list is prepared.
@@ -78,7 +78,7 @@ Define these fields before timing-dependent implementation:
 | Field | Required meaning |
 | --- | --- |
 | `schema_version`, `target_id`, `source_sha256` | Stable schema, package identity, and clip provenance |
-| `gdd_refs`, `prompt_record` | GDD sections the target illustrates; prompt record of the generated clip |
+| `gdd_refs`, `prompt_record` | GDD documents the target illustrates; prompt record of the generated clip |
 | `source_timebase`, `source_fps`, `is_variable_frame_rate` | Original timing, distinct from sampling rate |
 | `sample_fps`, `frame_index_base`, `clip_start_s` | Sampling convention; use zero-based indices |
 | `frames` | Mapping from each sampled index/file to source presentation timestamp |

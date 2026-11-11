@@ -1,11 +1,11 @@
 # Validation, Evidence, and Acceptance
 
-Version: 0.5 | Date: 2026-11-10
+Version: 0.6 | Date: 2026-11-10
 The commands below are project interfaces to implement during bootstrap; this document does not claim that they already exist.
 
 ## 1. Retained tests and disposable probes
 
-tester (GPT) writes and maintains every committed test, working from each task's acceptance criteria and GDD sections rather than from the implementer's own checks. Implementers never edit tests; tester never edits the source under test.
+tester (GPT) writes and maintains every committed test, working from each task's acceptance criteria and GDD documents rather than from the implementer's own checks. Implementers never edit tests; tester never edits the source under test.
 
 Keep only tests that protect behavior the producer would notice if it broke. Committed tests live only under `tests/regression/<area>/`:
 
@@ -74,7 +74,7 @@ When reviewer runs:
 - On the delta of behavior-changing commits made after the last reviewed candidate, before the producer accepts.
 - Not on data-only commits; those need a passing gate only.
 
-Reviewer checks out the tagged SHA in the review worktree and starts from a fresh context with the GDD sections in scope, contracts, the previous reviewed SHA, target approvals, and evidence. Reviewer is read-only for tracked source, data, tests, and configuration; dependency caches and build output go to ignored or external locations, and temporary review probes stay outside the reviewed tree. Reviewer assesses the Claude-authored implementation, overall integration, and whether tester's tests cover the acceptance criteria. The lead reviews art_tools and tester changes in the same range.
+Reviewer checks out the tagged SHA in the review worktree and starts from a fresh context with the GDD documents in scope, contracts, the previous reviewed SHA, target approvals, and evidence. Reviewer is read-only for tracked source, data, tests, and configuration; dependency caches and build output go to ignored or external locations, and temporary review probes stay outside the reviewed tree. Reviewer assesses the Claude-authored implementation, overall integration, and whether tester's tests cover the acceptance criteria. The lead reviews art_tools and tester changes in the same range.
 
 Report header: `[SNAP <tag> @ <sha>]: APPROVE | CONCERNS | BLOCKED`.
 Report fields: scope and baseline; acceptance results; findings with severity, file or evidence reference, and whether they block an acceptance criterion; tests and exit results; test coverage gaps; target deviations; performance results where in scope; limitations; recommended disposition.
