@@ -1,83 +1,60 @@
 # Workflow and Ownership
 
-Version: 0.7 | Date: 2026-11-10
-This document becomes normative when the producer adopts the v0.7 package.
+Version: 0.8 | Date: 2026-11-13
+Proposed policy for adoption. Read the section needed for the current task.
 
-## 1. Roles and decisions
+## 1. Roles, activation, and decisions
 
-The producer owns the GDD, scope, game design, art direction, binding targets, policy changes, and milestone acceptance. The lead owns coordination, integration decisions, and every Git commit within those boundaries. Implementation owners choose reversible details within approved contracts. tester owns all retained tests and the gate. Reviewer reports evidence and findings without fixing the reviewed source.
+The producer owns scope, design, art direction, binding targets, policy adoption, and milestone acceptance. The lead coordinates and commits. Owners choose reversible implementation details within approved constraints. Tester independently writes retained tests; reviewer does not edit the reviewed implementation.
 
-| Role | Runtime | Intended model and effort | Writes |
-| --- | --- | --- | --- |
-| lead | Claude Code, Agent Teams lead | `claude-fable-5-2`, high | Coordination records and all Git commits |
-| gameplay, systems, lookdev | Agent Teams teammates | `claude-opus-5-5`, high | Game source in their own paths |
-| tester | Codex, build worktree | `gpt-6-astra`, high | Retained tests, test fixtures and config, gate runner, completion-hook adapter, performance harness |
-| art_tools | Codex, build worktree | `gpt-6-astra`, medium | Assets, generators, targets, tools in its own paths |
-| reviewer | Codex, review worktree | `gpt-6-astra`, high | Review reports only |
-| deps | Claude Code subagent | `claude-haiku-5-5` | Dependency entries in `package.json` and the lockfile only |
+The existing requested roster is preserved below. Labels are configuration intentions, not proof of model availability. Verify effective model/client once when starting a role and after an environment change. Do not launch everyone simply because this table lists them.
 
-The producer decided on 2026-11-10:
-
-- The three Claude teammates write the game source. This applies to this project even where a machine-wide default names a different single writer.
-- Testing is independent of implementation. tester (GPT) writes every retained test from the task's acceptance criteria and GDD documents. Implementers never edit tests; tester never edits the source under test.
-- The lead makes all Git commits.
-
-Verify each role's actual account, client, model, effort, and tool support before use.
-
-Dependency changes: the lead approves a package and exact version; systems invokes the `deps` subagent (`.claude/agents/deps.md`), which installs it, updates the lockfile, and reports the change. If the runtime does not let a teammate start a subagent, the lead invokes it. The lead commits the result. Browser binaries and other pinned tool installs follow the same path.
-
-For a missing decision, record the question, options, recommendation, affected tasks, decision owner, and the last point at which work can proceed safely. Stop the affected dependency chain, not unrelated tasks. Silence is never approval.
-
-Project records:
-
-- `docs/gdd/` (producer): the GDD: a one-page GDD plus a short document for each system that needs more detail, with permanent document IDs; see [traceability](traceability.md).
-- `docs/decisions.md` (producer; lead may draft entries for approval): durable approvals and recorded deviations.
-- `tasks/milestones/<milestone>.md` (lead): status, candidate SHAs, and links to the producer's acceptance.
-- `handoff/<role>/environment/<run_id>.md` (each role): dated runtime observations with exact versions.
-
-## 2. Ownership map
-
-More specific rows take precedence over broader ones. Unlisted paths need an assignment from the lead before editing.
-
-| Paths or operation | Owner | Notes |
+| Role | Requested runtime/model | Work |
 | --- | --- | --- |
-| `src/core/` | systems | Stable contracts; changes follow contracts.md |
-| `src/systems/`, `src/ui/`, `data/rules.json`, `data/levels/` | systems | Game loop, UI, rules, levels |
-| `src/editor/`, `tools/dev/` | systems | Editor framework, dev writeback, commit helper, `ownership.json` |
-| `src/main.ts`, root build and lint config, `package.json` scripts | systems | Composition root; other roles request script changes by task |
-| Dependency entries in `package.json`, `package-lock.json` | deps | Only after lead approval |
-| `.claude/` | systems | Producer-approved settings, hook wiring, and agent definitions only |
-| `src/player/`, `src/camera/`, `src/mechanics/`, `data/tuning.json` | gameplay | The player's verbs and the core mechanic (combat, puzzle rules, card effects, and so on, per the GDD); simulation and camera adapters stay separate modules |
-| `src/visual/lighting/`, `src/visual/shaders/`, `src/visual/post/`, `src/visual/vfx/`, `data/visual/lighting.json`, `data/visual/vfx/` | lookdev | Lighting, shaders, post-processing, VFX |
-| Remaining `src/visual/` and `data/visual/`, `targets/`, `assets/` (including `assets/prompts/`) | art_tools | Generators, palette, registry, asset promotion, prompt archive |
-| `tests/` (including `tests/regression/` and fixtures), test-runner and Playwright config | tester | The only committed tests |
-| `tools/gates/`, `tools/perf/` | tester | Gate runner, gate worktree, completion-hook adapter, layout check, performance harness |
-| Remaining `tools/`, including `tools/validate_assets.ts`, `tools/trace/`, export and target utilities | art_tools | |
-| Colocated `*_panel.ts` | Owner of the data it edits | Imported only through development composition |
-| `tmp/probes/<role>/` | That role | Git-ignored; emptied before a task completes |
-| `AGENTS.md`, `CLAUDE.md`, `docs/` (including `docs/gdd/`), `roles/` | producer | Agents draft changes in a handoff |
-| `tasks/codex/` | lead | The assigned Codex role edits only its card's status fields and log |
-| `tasks/milestones/` | lead | |
-| `tasks/manual_requests/` | Requesting role | One file per request |
-| `handoff/<role>/`, `qa/evidence/<task_id>/<role>/` | Named role | Append; never overwrite another author's records |
-| Review reports outside the reviewed tree | reviewer | No edits to tracked source, tests, data, or configuration |
-| Git commits | lead | Through the commit helper (§4); the producer may commit their own tuning and GDD edits; the producer creates milestone tags |
+| lead | Claude Code, `claude-fable-5-2`, high | Coordination and Git commits |
+| gameplay, systems, lookdev | Claude teammates, `claude-opus-5-5`, high | Assigned game-source areas |
+| tester | Codex, `gpt-6-astra`, high | Risk tests, integration/candidate verification |
+| art_tools | Codex, `gpt-6-astra`, medium | Assets, prompts, targets, tools |
+| reviewer | Codex, `gpt-6-astra`, high | Read-only candidate/delta review |
+| deps, optional | Claude subagent, `claude-haiku-5-5` | Substantial independent approved installs |
 
-Producer edits to approved fields in `data/` take precedence over file ownership. Record the approved field paths and source revision in a `chore(tuning)` commit or a decision entry.
+Default activation is lead plus the current feature owner. Add another owner only when its work is independent, paths do not overlap, and its result is useful without repeated coordination. Invoke tester at risk-bearing integration batches and milestone candidates; invoke reviewer for a meaningful candidate/delta. Idle specialists need not stay live.
 
-The producer drops manual-generation results into `assets/inbox/<request_id>/`. The requesting role may inspect them; art_tools promotes them into managed paths and updates the manifest, credits, and prompt archive.
+Lead approves new dependencies and exact versions. systems may install them directly. Delegate to deps only when it is a worthwhile independent job. Existing authorized packages need no repeated approval conversation.
 
-Ownership changes need the old writer to release or be confirmed stopped, a handoff of its uncommitted files, and a lead assignment within policy. A permanent change to this map needs producer approval.
+For a genuine missing decision, report the question, recommendation, affected work, and last useful independent step once. Group non-blocking questions for the next review boundary. Silence does not approve a new gameplay rule or binding art direction.
 
-## 3. Task records
+## 2. Ownership and records
 
-One task ID space (`T-<nn>`) covers Claude and Codex work. The lead allocates IDs. Handoffs, commits, and evidence use the same ID.
+Specific paths override broader rows. Transfer ownership after release or confirmed stop; preserve uncommitted work.
 
-**Claude roles: the Agent Teams task list is canonical.** The lead creates each task with the card fields below in its description and uses native dependencies. When a blocked owner or one who needs a decision messages the lead, the lead adds a `blocked:` or `needs_context:` line with the reason. No separate event log is kept.
+| Paths/operation | Owner |
+| --- | --- |
+| `src/core/`, `src/systems/`, `src/ui/`, `src/editor/`, `src/main.ts` | systems |
+| `data/rules.json`, `data/levels/`, `tools/dev/`, root build config, `.claude/` | systems |
+| `package.json`, `package-lock.json` | systems; optionally leased to deps for approved installs |
+| `src/player/`, `src/camera/`, `src/mechanics/`, `data/tuning.json` | gameplay |
+| `src/visual/lighting/`, `src/visual/shaders/`, `src/visual/post/`, `src/visual/vfx/`, `data/visual/lighting.json`, `data/visual/vfx/` | lookdev |
+| Remaining `src/visual/`, `data/visual/`, `assets/`, `targets/`, remaining `tools/` | art_tools |
+| `tests/`, test/Playwright config, `tools/gates/`, `tools/perf/` | tester |
+| Colocated `*_panel.ts` | Data owner; imported through development composition only |
+| `AGENTS.md`, `CLAUDE.md`, `docs/`, `roles/` | Producer; agents may edit a scoped draft when requested |
+| `tasks/codex/`, `tasks/milestones/`, `tasks/completed_refs.jsonl` | Lead; assigned owner updates its status/handoff |
+| `tasks/manual_requests/`, `handoff/<role>/`, `qa/evidence/<task_id>/<role>/`, `tmp/probes/<role>/` | Named/requesting role |
+| Review reports | reviewer, outside the reviewed source tree |
+| Git commits | lead; producer may commit own tuning/GDD edits |
 
-**Codex roles: one card file per task, status inside the card.** The lead writes `tasks/codex/<task_id>.md`. The assigned Codex role edits only `status`, `status_note`, and `status_at`, and appends dated lines under `## Log`. Any other change is a new card revision by the lead. Status values: `ready`, `in_progress`, `ready_for_commit`, `ready_for_gate`, `done`, `blocked`, `needs_context`, `cancelled`.
+A generating role may own its explicitly assigned, unique new `assets/prompts/<resource_id>/<generation_id>.md` records. art_tools retains archive/index and manifest ownership; this exception avoids a separate handoff per call.
 
-Card fields (values are illustrative, not approved design):
+Producer-approved values override path ownership. Record changed field paths/revisions; preserve newer edits. Lead assigns unlisted paths once.
+
+Records have one home: `docs/gdd/` for design, `docs/decisions.md` for decisions, `tasks/milestones/` for candidates, and `handoff/<role>/environment/` for observed environments. Create records when needed, not an empty documentation tree. Link existing records instead of copying their text into tasks.
+
+## 3. Bounded tasks and context reuse
+
+Use one `T-<nn>` ID space. Claude tasks live in the native task list; Codex uses `tasks/codex/<task_id>.md`. Do not assume task state is shared across clients. Dependency messages contain the result and artifact/revision only.
+
+Use [the task packet](templates/task_packet.md) for a coherent feature or asset batch. Avoid separate tasks for each file, function, screenshot, or check command.
 
 ```yaml
 id: T-07
@@ -87,77 +64,81 @@ owner: gameplay
 gdd_refs: [GDD-CORE_MECHANIC@r2]
 depends_on: [T-02]
 allowed_paths: [src/mechanics/, data/tuning.json]
-paired_test_task: T-07t
 acceptance:
-  - The core verb resolves in the order and under the conditions in GDD-CORE_MECHANIC §2.2.
-  - Its timings and parameters come from validated tuning data and appear in the tuning panel.
-out_of_scope: [feedback_animation, vfx]
-timing_or_performance: true
-verification_profile: integration
-open_decisions: []
-# Codex cards only:
+  - The approved core verb completes under the specified conditions.
+out_of_scope: [new_mechanics]
+context_refs:
+  - docs/gdd/systems/core_mechanic.md#rules
+  - docs/contracts.md#3-time-and-reproducibility
+base_commit: <actual_sha>
+verification_profile: local
+timing_or_performance: false
 status: ready
-status_note: ""
-status_at: 2026-11-10T15:00:00-05:00
 ```
 
-`timing_or_performance: true` turns on the full evidence manifest (validation.md §4).
+Include only this task's constraints, relevant sections, and acceptance. Authoritative references override summaries. Read each section once and retain its revision. Do not open every nested link, reload the full GDD, inspect all archived prompts, or repeat environment discovery.
 
-**Paired test tasks.** When a task's behavior falls in a retained-test category (validation.md §1), the lead creates a paired task for tester at the same time, with the same `gdd_refs` and acceptance criteria. tester drafts the tests from those criteria immediately and finalizes them against the implementer's commit. A new test that fails becomes a failure report with reproduction steps; the lead turns it into a fix task for the implementer. A milestone candidate requires every paired test task to be done.
+Refresh after an input revision changes, a finding contradicts cached context, ownership changes, or context is lost. Use the base revision and actual diff to find changes. Check current files before editing shared data.
 
-**Task flow:**
+Use [a checkpoint](templates/checkpoint.md) at handoff, context reset, or meaningful pause only. Keep current decisions, files, evidence links, and next action. Update one active checkpoint; read completed histories only for a specific question.
 
-1. The owner finishes the work, deletes probes, and writes the handoff with `changed_paths` and `gdd_refs`.
-2. The owner tells the lead the task is ready for commit (Claude: message; Codex: card status `ready_for_commit`).
-3. The lead commits it (§4) and reports the SHA (Claude: `commit:` line in the task; Codex: card log).
-4. The owner marks the task complete. For Claude tasks the completion hook runs the gate on that SHA; Codex roles run `npm run gate:sha -- <sha>` and set `done` when it passes.
+Delivery states are `ready`, `in_progress`, `implemented`, `integrated`, `verified`, `blocked`, `needs_context`, `cancelled`. Preserve this state in the canonical record even if the client has different native statuses. Native completion may mean `implemented`, never accepted release.
 
-Each owner has one active implementation task by default. Other ready tasks are a backlog, not a concurrency target. Report a dependency failure once with the required action; retry when relevant evidence or state changes.
+1. Owner implements the whole task and runs selected local checks when ready.
+2. Owner records one handoff: changed paths, result, check/result and evidence, unresolved issue/next action. Set `implemented`; notify lead once.
+3. Lead inspects the scoped diff and prepares one metadata row for each native-only completed task in `tasks/completed_refs.jsonl`: `task_id`, `gdd_refs`, `changed_paths`, canonical handoff pointer. Commit this compact index with ready work, then record SHA and set `integrated` in the canonical task. The index contains no self-referencing commit SHA and duplicates no full task/handoff. Owner need not return to copy the result.
+4. Selected checks are attributed to committed inputs; tester handles integration/milestone work. Lead records `verified` when the profile is satisfied. Only producer accepts a milestone.
 
-Handoff fields: `task_id`, `task_revision`, `gdd_refs`, `outcome` (`DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`), `changed_paths`, `commit` (added after the lead commits), `completed`, `not_completed`, `verification` (command and exit result), `evidence`, `risks`, `open_decisions`, `next_owner`. `DONE_WITH_CONCERNS` cannot satisfy a blocking acceptance criterion without a producer decision.
+One tester task may cover a feature batch and several implementation tasks. Retain tests for risks in validation.md §1, not one paired tester card per implementation card. Send useful failures to the owner with one reproduction; do not repeatedly route an unchanged failure.
 
-Manual requests (`tasks/manual_requests/<request_id>.md`) record the request ID, requesting role, provider and model, full prompt, parameters, reference inputs, expected output, `gdd_refs`, and the destination `assets/inbox/<request_id>/`. A fulfilled request becomes a prompt record ([traceability](traceability.md) §4). Missing output blocks only work that depends on it; placeholder-based work continues.
+Messages are triggered by completion, a blocker, changed shared semantics, or an artifact that unblocks an active dependency. No status pings, acknowledgement chains, speculative advice, or repeated context dumps. Let owners finish coherent steps. Interrupt only for cancellation, immediate destructive/conflicting work, or an invalidated dependency causing substantial waste.
 
-## 4. Commits and the gate
+Manual generation requests link a structured prompt, inputs, output destination, and `gdd_refs`. Missing media blocks dependent work only; placeholders can continue. Archive the exact submitted prompt once at generation (traceability.md §4).
 
-All writers share the build worktree. The lead is the only committer, and the gate tests commits in a separate worktree, so writers never need to pause.
+## 4. Integration, commits, and verification
 
-- **Commit helper.** systems provides `npm run commit:task -- <task_id>`. It reads the task's handoff, refuses any changed path outside the owner's paths in `tools/dev/ownership.json` (a machine-readable copy of §2) or outside the card's `allowed_paths`, stages only those paths, shows the staged diff, and commits with a Conventional Commit message and the trailer `Task: <task_id>`. The lead inspects the diff before confirming. Never use `git add -A`, `git add .`, or `git commit -a`.
-- **Gate worktree.** tester's runner checks out the commit under test, detached, in its own worktree with separate `node_modules`, build output, browser profile, and ports. Runs are queued and execute one at a time. Uncommitted files in the build worktree are never part of a gate run.
-- **Dependencies between owners.** A commit that relies on another owner's uncommitted file fails the gate. Report that to the lead as a dependency; do not edit the other owner's file.
-- **Data-only commits** (every changed path under `data/`, including producer tuning) need a passing gate and nothing else. They do not go to the reviewer.
-- **Behavior-changing commits** (source, shaders, tests, assets, runtime-affecting tools, configuration) go to the reviewer at the next review point (validation.md §5).
+Lead remains the only Agent committer. Inspect task-owned diffs and stage explicit paths. Batch compatible finished tasks where useful; include one `Task: <ID>` trailer per task. A future helper may automate this, but its absence does not block this documentation template or authorized manual commits.
 
-Use Conventional Commits with `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, or `chore`; the scope names the area. Producer tuning uses `chore(tuning)`, GDD changes use `docs(gdd)`. Commit on the `jam` branch only after checking that it exists and is intended. Pushing needs explicit authorization. No force pushes, history rewrites, or resets that discard another writer's work. Never commit secrets or `.env` credentials.
+Do not commit another active owner's partial work. Integrate a finished dependency first or together with its finished consumer. Do not test a known-incomplete integration just to rediscover the dependency failure.
+
+| Change | Default profile and trigger |
+| --- | --- |
+| Documentation only | `docs`: scoped consistency/diff check when ready |
+| Isolated implementation, art, or tuning | `local`: relevant type/build, schema, or visual check when ready |
+| Shared interface, high-risk behavior, combined feature | `integration`: affected tests and one smoke at integration |
+| Milestone/release candidate | `milestone`: full gate on exact candidate SHA and complete demo evidence |
+
+M0 has the explicit bootstrap exception in validation.md §3: accept its declared implemented checks, not a full-gate pass. Full candidate gates are required from M1 onward.
+
+Choose by behavior/risk, not path alone: data changing timing or schemas may need integration checks. No full gate per tuning slider, screenshot, or commit. Evidence reuse follows validation.md; a historical candidate pass is never relabeled as a new passing SHA.
+
+Full candidate runs use a separate gate worktree with isolated dependency state, build output, browser profile, and ports. Independent writers can continue. Serialize runs and supersede obsolete queued candidates. Completion hooks inspect records only; they never start the suite.
+
+Use Conventional Commits and verify the intended branch. Pushing needs explicit authorization. No force pushes, destructive resets, secrets, or unrelated changes. Publication and milestone acceptance are separate decisions.
 
 ## 5. Bootstrap and milestones
 
-Bootstrap has no game-content gate yet. systems sets up the project, commit helper, ownership file, and one editor save slice; tester sets up the gate runner, gate worktree, hook adapter, and `tests/regression/` layout; art_tools supplies the asset validator and trace checks, or reports which is still missing. Record what exists and what does not. Do not require a nonexistent `npm run gate` to create itself, and do not replace missing stages with no-ops that pass.
+This repository contains specifications/templates, not runtime automation. Command names describe interfaces to implement when needed; absence is not success. Do not build an orchestration platform before the first playable loop.
 
-M0 approves a minimal working slice and stable contract meanings, not every future event or field. Build only the panels and pipelines the current milestone needs. Prove an external generation path before the first task that depends on it.
+M0 supplies the app, minimal relevant contracts, run/build commands, one smoke/capture path, and needed tuning/save behavior. Keep commits manual until a helper saves repetition. Add a record-reading hook only once the client and gate exist. Prove a generation path before its output becomes a dependency.
 
-| Milestone | Required outcome | Producer decision |
-| --- | --- | --- |
-| M0 | App runs; one tunable field previews, saves, reloads, and detects conflicts; gate, commit helper, and snapshot rehearsal work; initial contracts and environment recorded | Accept foundation and initial contract meanings |
-| M1 | The core mechanic playable with placeholder visuals: the player's verbs from the approved one-page GDD and core gameplay system documents, and the minimum opposing or interactive element they act on (for example a dummy enemy, one puzzle, one hand of cards); relevant panels, paired tests, and approved target constraints available | Accept or adjust basic feel |
-| M2 | A complete start/play/end loop and one representative level | Continue, revise, or change direction |
-| M3 | Everything on the approved content list present: levels, characters and objects, UI, assets, lighting, and VFX, as far as the GDD calls for them | Accept content and level/visual editing |
-| M4 | Agreed feel and performance criteria pass; all blocking defects resolved | Explicitly accept any deferred non-blocking issue |
-| M5 | Features frozen; final build, recording, report, replacement manifest, and portable exports exist | Accept the final revision and authorize port planning |
+| Milestone | Outcome |
+| --- | --- |
+| M0 | App/minimal checks run; ownership, environment, relevant contracts, and needed tuning round-trip are known |
+| M1 | Core verbs playable with placeholders; relevant risk checks and representative motion/look targets exist |
+| M2 | Complete start/play/end slice; storyboard selects important events and supplies their keyframes; complete reference video and runtime walkthrough cover the whole slice |
+| M3 | Approved content and representative model/animation quality integrated; new important demo events receive keyframes; routine actions reuse the established shot plan |
+| M4 | Agreed feel and measured performance criteria pass; blocking defects resolved; final demo path stable |
+| M5 | Final candidate, complete captured gameplay video, reference-video package, report, provenance, portable exports, and remaining concerns delivered |
 
-Before a milestone's implementation starts, every GDD document with `needed_by` at or before that milestone must have `status: approved` ([traceability](traceability.md) §1). Before M1, the approved one-page GDD and the detail documents marked `needed_by: M1` must together cover the concept, the core loop, the success/failure loop, platform, input, camera or view, time behavior (pause, turns, and any time scaling), the player's verbs and core rules, the feedback those rules depend on, and provisional tolerances. The writing guide (`docs/templates/gdd_guide.md`) shows where each item goes. A rule too vague for tester to test belongs in a detail document, even if the one page mentions it. Genre-specific rules (for example buffer and cancel windows in an action game, or turn order in a card game) go into the relevant gameplay system document. Owners may prototype alternatives while these are open, but may not call an invented default approved.
+Before implementation needs a design decision, the relevant GDD states it clearly. Before M1, approved one-page GDD plus only necessary detail documents cover the core loop, success/failure, platform, input, view, time behavior, verbs, feedback, and provisional tolerances. Add detail when existing approved documents cannot describe it clearly; use the five GDD categories. A small change within an approved feature needs neither another design document nor repeated approval of unchanged rules.
 
-After M1, development continues piece by piece. Before the first implementation task for a gameplay system, a set of screens, a level, the content plan, or the art and audio set, the producer approves its detail document under `docs/gdd/` (`systems/`, `ui/`, `levels/`, `content/`, or `art/`, from the matching template); tasks then reference that document in `gdd_refs`, not only `GDD-ONE_PAGE`. The one-page GDD stays current as the summary and index; detail goes into the detail documents.
+Before a milestone, check only its required GDDs. Prototype reversible alternatives while a non-blocking decision is open; label them as proposals. Producer approves new scope, binding direction, and milestones, not every ordinary implementation step.
 
-Milestone close:
+At milestone close, lead integrates ready work; tester checks the named candidate using M0 bootstrap acceptance or the full gate from M1 onward. Reviewer examines high-risk/behavioral changes; lead reviews tester/art-tool changes where relevant. Producer receives SHA, evidence, the milestone's demo scope, and concise playtest route. Repairs/tuning produce a new candidate: run affected checks while iterating and the required candidate checks once on the final acceptance candidate. Review only the changed delta unless a concrete finding expands scope. Producer accepts a named SHA; never move an existing milestone tag.
 
-1. The lead commits all finished work, including paired tests; the gate passes on the candidate commit.
-2. The producer tags that commit `snap/mN-k`.
-3. Reviewer reviews the candidate; the lead reviews art_tools and tester changes in the same range.
-4. The producer playtests and tunes with the editor. Tuning commits are data-only and need the gate only.
-5. Repairs that change behavior create a new candidate; reviewer reviews only the delta since the last reviewed candidate.
-6. The producer accepts a named SHA, tagged `snap/mN`. Never move an existing tag.
+## 6. Documentation and cost feedback
 
-## 6. Documentation boundary
+Keep canonical ownership, verification, and asset rules in their documents. Task packets link them. Do not duplicate policies across role instructions or README; keep historical narrative outside automatic session entry points.
 
-The Chinese explainer for the producer explains why the workflow is shaped this way, when the producer steps in, and how to operate it, and links to these documents. It does not keep a second ownership table, launch configuration, or definition of done. Runtime observations go in dated handoffs with exact versions.
+At each completed feature batch, record available counters once: fresh/cached input tokens separately, output tokens, model, tool calls, inter-agent messages, context reloads, check runs, wall time, and rework. Use `unknown` for unexposed counters. Compare similar tasks including retries. Reduced document size is not a measured token/cost reduction. Remove repeated steps that contribute no decision/evidence while preserving approvals and correctness boundaries.

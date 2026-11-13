@@ -1,7 +1,9 @@
 # Architecture, Data, and Editor Contracts
 
-Version: 0.7 | Date: 2026-11-10
+Version: 0.8 | Date: 2026-11-13
 This is a proposed contract design, not evidence that these interfaces already exist.
+
+Read only the contract section touched by the task. Validate external/untrusted data at ingestion or revision changes; typed internal consumers use that validated contract. Do not repeatedly parse unchanged data, wrap every internal call in defensive fallbacks, or add hypothetical recovery frameworks. Add error handling for concrete boundaries and observed failure modes. This does not relax save-conflict, path, origin, or schema checks below.
 
 ## 1. Dependencies and runtime flow
 

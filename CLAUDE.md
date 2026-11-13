@@ -2,75 +2,38 @@
 
 # Claude Code Adapter
 
-Version: 0.7 | Date: 2026-11-10
-Status: Becomes policy with the shared v0.7 package.
+Version: 0.8 | Date: 2026-11-13
+Status: Proposed with the shared v0.8 package.
 
-## Select the actual role
+## Session setup
 
-- This file applies to every Claude session that loads it. Do not assume that every session is the lead.
-- A session explicitly assigned `lead` coordinates the team. A session assigned `gameplay`, `systems`, or `lookdev` follows that role's ownership and task scope. The `deps` subagent follows its own definition only.
-- If the role is missing or contradictory, ask for the assignment before editing or spawning teammates.
+- Use the assigned role. The roster in docs/workflow.md §1 lists available roles, not a requirement to launch them all. Resolve ambiguous ownership with the lead before starting another writer.
+- Verify actual client/model/effort/tool availability once at setup and after an environment change. Reuse the dated environment record. Do not repeat account, launcher, permission, or hook rehearsals per task. Never silently substitute a requested model.
+- Load AGENTS.md through this import once. Give teammates a bounded task packet with relevant sources, not duplicate policy or the entire conversation.
 
-## Roster and startup verification
+## Tasks and communication
 
-| Role | Kind | Intended model | Intended effort |
-| --- | --- | --- | --- |
-| lead | Agent Teams lead | `claude-fable-5-2` | high |
-| gameplay | Agent Teams teammate | `claude-opus-5-5` | high |
-| systems | Agent Teams teammate | `claude-opus-5-5` | high |
-| lookdev | Agent Teams teammate | `claude-opus-5-5` | high |
-| deps | Subagent (`.claude/agents/deps.md`) | `claude-haiku-5-5` | default |
+- Native Agent Teams tasks are canonical for Claude; Codex cards remain under `tasks/codex/`. Do not mirror either into a second full task list.
+- Use workflow.md §3 fields/states. Keep one active implementation task per owner; reuse that owner for related follow-up while context remains useful.
+- Native completion means implementation and selected local checks are finished. Integration and verification remain explicit in the record; completion is not milestone acceptance.
+- Put one handoff in the canonical record, or link one file if needed. Send one `implemented` message. The lead adds SHA and the compact completed-reference index described in workflow.md §3; the worker need not wake to copy a report.
+- Non-blocking ideas wait for the next task boundary. No status pings or routine interruptions. Report an actual dependency release once with its artifact/revision.
 
-- Preserve these models; do not silently substitute another model, effort, provider, or permission mode.
-- Verify the installed Claude Code and launcher versions, loaded instruction files, actual model and effort, display mode, task tools, and hook behavior. Record the result under `handoff/<role>/environment/`.
-- Definitions under `.claude/agents/` must exist before their roles start. Settings in a definition can behave differently across versions and teammate modes; check the effective configuration after spawning.
-- Name the role and model explicitly when spawning a teammate.
-- Prompt instructions are not a filesystem sandbox. Verify available tools and write restrictions separately.
-- Treat Orca as an optional launcher. Verify its working directory, launch flags, hibernation setting, and recovery behavior on the installed version.
-- If the runtime cannot enforce a required restriction or provide a required model, report the concrete blocker and continue only independent work.
+## Responsibilities
 
-## Lead responsibilities
+- Lead assigns scope, resolves scheduling, inspects task-owned diffs, and commits. Integrate related finished tasks together where practical. Retained-risk tests can share one tester task per feature batch.
+- Implementers preserve ownership and tuning, and run their selected checks. They do not edit retained tests. Report a test/source disagreement with one reproduction.
+- systems may install already-approved exact dependencies within assigned paths. Use optional `deps` only for substantial independent installation work; a one-command install does not need another agent.
+- Route candidates to tester/reviewer at declared integration/milestone points, not every cosmetic or tuning commit.
 
-- The Agent Teams task list is the canonical record for Claude work. Create each task with the card fields from workflow.md §3, including `gdd_refs` and `timing_or_performance`.
-- Write Codex work, including tester's work, as card files under `tasks/codex/`; read status from the cards. Do not assume Claude task state is visible to Codex.
-- When a task's behavior falls in a retained-test category (validation.md §1), create its paired tester card at the same time, with the same `gdd_refs` and acceptance criteria. Turn tester's failure reports into fix tasks for the implementer.
-- Dispatch only dependency-ready tasks of the current milestone. Start with one active implementation task per owner and keep a small ready backlog.
-- Make every Git commit. When an owner reports a task ready, run `npm run commit:task -- <task_id>`, inspect the staged diff against the card, confirm, and report the SHA (Claude: `commit:` line in the task; Codex: card log). Commit deps changes the same way, and producer tuning or GDD edits when the producer asks.
-- Maintain coordination records and draft reports. Do not edit application code, tests, package files, or producer-owned policy.
-- Approve dependency requests by package and exact version, then have systems invoke the `deps` subagent. If teammates cannot start subagents in this runtime, invoke `deps` yourself.
-- When the producer changes a GDD document, run `npm run gdd:impact`, report stale records by owner with a proposed action, and create rework tasks only for what the producer chooses.
-- Check the handoff and commit of the actual dependency owner before dispatching dependent work.
-- Review art_tools and tester changes at each candidate. Route behavior-changing commits to the reviewer; data-only commits need the gate only.
-- Convert accepted findings into tasks. Resolve or explicitly defer blocking findings before requesting milestone acceptance.
-- Present the candidate SHA, gate result, both review scopes, playtest steps for the producer, and remaining concerns. Wait for explicit acceptance before dispatching the next milestone.
+## Completion hook
 
-## Teammate responsibilities
+When implemented and verified on the installed client, the hook checks records only. It never starts builds, browsers, test suites, generation calls, or agents.
 
-- Read the shared documents and your task. Work only in your assigned paths; do not revert another writer's changes.
-- Do not write or edit committed tests; tester owns `tests/`. Put your own checks in `tmp/probes/<role>/<task_id>/` and delete them before completing. If tester's test and your implementation disagree, report it to the lead instead of changing either side to match.
-- Provide editor metadata for new tunable fields. Register panels through the composition root; gameplay modules never import their colocated panels.
-- Preserve producer tuning; ask for a field-level decision before changing a protected value.
-- Propose contract changes through systems, using the breaking versus non-breaking rules in contracts.md.
-- Write the handoff with `changed_paths` and `gdd_refs`, then message the lead that the task is ready for commit. Do not commit. After the lead reports the SHA, add it to the handoff and mark the task complete; the hook runs the gate on that commit.
-- If the gate fails because of another owner's files, report it to the lead; do not edit their files or retry an unchanged failure.
-- lookdev may generate textures through MCP or a manual request within its task; report each call so art_tools can archive the prompt and register the asset.
-
-## deps subagent
-
-- Installs only packages and versions the lead approved, with exact versions, and updates `package.json` and `package-lock.json` only.
-- May also install pinned tool binaries the gate needs, such as Playwright browsers, when the task says so.
-- Reports the installed versions, the changed files, and any audit warnings; the lead commits them. It never commits, and never edits source, configuration, or tests.
-
-## Completion hook contract
-
-- tester implements and owns the hook adapter described in validation.md §2; systems wires it in `.claude/settings.json`.
-- The adapter finds the task's commit by the lead's `Task: <task_id>` trailer and exits 0 only when a passing gate record exists for that commit. A missing commit, a failure, or an unfinished run exits 2 with an explanation on stderr.
-- Claude Code treats any exit code other than 2, a crash, or a hook that fails to start as non-blocking, so a plain `npm run gate` hook does not block completion.
-- Set the hook timeout explicitly and keep the adapter's own limit below it.
-- Rehearse a passing task, a failing test, an uncommitted task, and a queued run before relying on the hook, and confirm in the task list that blocked tasks stay incomplete.
+- Implementation task: require a handoff and selected verification record; integration may be pending.
+- Candidate task with `verification_profile: milestone`: require a full-gate pass for that exact SHA from M1 onward. M0 instead requires its explicit bootstrap-acceptance record (validation.md §3), without claiming a full pass.
+- Missing evidence produces one actionable result, not a repeated retry loop. Verify actual blocking/timeout behavior during setup; this document does not prove it.
 
 ## Recovery
 
-- After a restart, check live teammates, the task list, active ownership, the current Git diff, and effective permissions before resuming.
-- Reconcile stale claims with the lead; never start a second writer because an old session looks idle.
-- Do not claim that a resumed conversation restored teammates, runtime state, or earlier gate results without checking.
+After context loss, read the checkpoint, relevant changes since its base revision, and active ownership. Reload only invalidated sections. Confirm that an old writer stopped before transferring its paths. Do not restart healthy teammates because they appear idle.
