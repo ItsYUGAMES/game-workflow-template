@@ -129,8 +129,8 @@ M0 supplies the app, minimal relevant contracts, run/build commands, needed tuni
 | Milestone | Outcome |
 | --- | --- |
 | M0 | App/minimal checks run; actual Agent can connect, query, act, retrieve a real capture, close and reconnect safely; isolated defaults, production exclusion, and needed tuning round-trip are demonstrated |
-| M1 | Core verbs playable with placeholders and exposed through the interface; a `--simulate` scenario runs the real simulation modules; relevant risk checks and representative motion/look targets exist |
-| M2 | Complete start/play/end slice; harness or verified capture adapter drives/replays and records it; selected important events have keyframes; reference and runtime videos cover the whole slice |
+| M1 | Core verbs playable with placeholders and exposed through the interface; a `--simulate` scenario runs the real simulation modules; relevant risk checks exist |
+| M2 | Complete start/play/end slice; representative motion/look targets exist against the approved art baseline; harness or verified capture adapter drives/replays and records it; selected important events have keyframes; reference and runtime videos cover the whole slice |
 | M3 | Approved content and representative model/animation quality integrated; new important demo events receive keyframes; routine actions reuse the established shot plan |
 | M4 | Agreed feel and measured performance criteria pass; blocking defects resolved; final demo path stable |
 | M5 | Final candidate, complete captured gameplay video, reference-video package, report, provenance, portable exports, and remaining concerns delivered |
