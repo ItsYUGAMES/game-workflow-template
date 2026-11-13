@@ -31,17 +31,107 @@
 
 ```mermaid
 flowchart TD
-  A[批准的玩法与美术基准] --> B[当前任务包]
-  B --> C[功能或资源批次]
-  C --> D{变化涉及的范围}
-  D -->|局部| E[相关检查与一次交接]
-  D -->|共享接口或高风险| F[受影响测试与集成检查]
-  E --> G[集成候选]
-  F --> G
-  G --> H{申请里程碑验收}
-  H -->|继续迭代| B
-  H -->|是| I[候选检查与实机演示]
-  I --> J[制作人验收具体版本]
+  A["一页策划<br/>制作人填写并批准"] --> B["lead 定核心架构<br/>写进 docs/architecture.md"]
+  B --> C["M0 打通基础<br/>应用能跑，AI 能直连游戏"]
+  C --> D["功能批次循环<br/>实现、交接、提交、验证"]
+  D --> E["里程碑验收<br/>制作人验收一个具体提交"]
+  E -->|"下一个里程碑（M1 到 M5）"| D
+```
+
+## 流程图与架构图
+
+上面的图是总流程。下面五张图依次是：什么事件触发谁、总流程里两步的展开、角色结构和代码结构。规则以各文档为准，图只是摘要。
+
+### 事件驱动：什么事件触发谁
+
+里程碑之间按顺序推进；里程碑之内，每个 Agent 只在下面这些事件发生时行动。没有事件就不发消息、不轮询状态、不跑检查。能打断正在工作的 Agent 的只有三种事件：任务被取消、依赖失效会造成明显浪费、出现破坏性或冲突的操作。规则见 [workflow](docs/workflow.md) §3–4 和 [validation](docs/validation.md) §2。
+
+```mermaid
+flowchart LR
+  E1(["负责人完成批次并交接"]) --> R1["lead：核对改动并提交"]
+  E2(["集成批次提交完成"]) --> R2["tester：受影响的测试，加一次 smoke"]
+  E3(["检查失败"]) --> R3["负责人：按一次复现修复"]
+  E4(["需要改结构"]) --> R4["lead：更新架构记录"]
+  E5(["缺少设计或范围决定"]) --> R5["制作人：做决定"]
+  E6(["依赖的产物就绪"]) --> R6["下游负责人：开始工作"]
+  E7(["GDD 修订"]) --> R7["lead：查一次影响，只安排受影响的返工"]
+  E8(["申请里程碑验收"]) --> R8["tester、reviewer、制作人：候选检查与验收"]
+```
+
+这是靠规则约定的事件驱动：模板里没有事件总线或调度器，是各 Agent 按规则只在这些时刻行动。计划中唯一的自动触发点是任务完成时的 hook，它只读取记录。
+
+### 一个功能批次
+
+总流程里“功能批次循环”的展开。任务状态依次是 `implemented`、`integrated`、`verified`。规则见 [workflow](docs/workflow.md) §3–4。
+
+```mermaid
+flowchart TD
+  A["lead 发任务包<br/>GDD 引用、路径、验收、验证档位"] --> B["负责人实现整个批次<br/>完成后做选定的本地检查"]
+  B -->|需要改结构| X["lead 更新架构记录"]
+  X --> B
+  B --> C["一次交接<br/>状态 implemented"]
+  C --> D["lead 核对并提交<br/>对照架构记录，状态 integrated"]
+  D --> E{"验证档位"}
+  E -->|"docs / local"| F["相关检查"]
+  E -->|integration| G["tester：受影响的测试，加一次 smoke"]
+  F --> H["状态 verified"]
+  G --> H
+  H -->|下一个任务包| A
+```
+
+### 里程碑验收
+
+总流程里“里程碑验收”的展开。两个标签都由制作人打。规则见 [workflow](docs/workflow.md) §5 和 [validation](docs/validation.md) §3、§5。
+
+```mermaid
+flowchart TD
+  A["lead 集成候选<br/>完成的工作全部提交"] --> B["制作人打候选标签<br/>snap/mN-k"]
+  B --> C["tester 跑候选检查<br/>M0 基础清单，M1 起完整 gate"]
+  C --> D["reviewer 只读审查<br/>只看上次审查之后的改动"]
+  D --> E["制作人试玩"]
+  E -->|"有修复或调参：新候选"| A
+  E -->|通过| F["制作人验收<br/>给该提交打 snap/mN"]
+```
+
+### 角色架构
+
+默认只启用 lead 和当前功能的负责人，其他角色按需启动；可选的 deps 子 Agent 没有画出。每个角色拥有的路径见 [workflow](docs/workflow.md) §2。
+
+```mermaid
+flowchart TD
+  P["制作人（你）<br/>范围、设计、美术方向、里程碑验收"] --> L["lead · Claude Code · claude-fable-5-2<br/>核心架构、协调、全部提交；不写游戏源码"]
+  L --> T
+  L --> X
+  subgraph T["Claude 队友 · claude-opus-5-5"]
+    G["gameplay<br/>玩家、镜头、核心机制"]
+    S["systems<br/>核心契约、UI、游戏接口"]
+    K["lookdev<br/>灯光、着色器、特效"]
+  end
+  subgraph X["Codex · gpt-6-astra"]
+    TE["tester<br/>保留测试、gate、性能"]
+    AR["art_tools<br/>资产、提示词、目标包"]
+    RV["reviewer<br/>只读审查候选版本"]
+  end
+```
+
+### 游戏运行时的分层
+
+模板的通用约束，见 [contracts](docs/contracts.md) §1。每个项目的具体模块划分由 lead 写进 `docs/architecture.md`。
+
+```mermaid
+flowchart LR
+  DATA["data/ 数据"] --> SIM
+  AGENT["AI Agent<br/>MCP 或 HTTP"] --> DEV
+  subgraph RT["游戏运行时（Three.js 原型）"]
+    CORE["核心契约 · src/core<br/>类型、命令、事件、时钟、随机数"]
+    SIM["模拟层<br/>权威状态，接收命令"]
+    PRES["表现层<br/>只读状态与事件，渲染和 UI"]
+    DEV["仅开发时加载<br/>编辑器面板、Agent 游戏接口<br/>发行构建中剔除"]
+    CORE -.-> SIM
+    CORE -.-> PRES
+    SIM -->|事件与只读状态| PRES
+    DEV -->|命令与查询| SIM
+  end
 ```
 
 ## 你在每个里程碑验收什么
