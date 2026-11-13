@@ -55,7 +55,7 @@ Work not driven by any GDD document, such as tooling or infrastructure, uses `gd
 When scale warrants automation, art_tools implements the following interfaces under `tools/trace/`. Until then, a scoped manual reference check is valid and is recorded honestly; this template does not contain those commands. Run changed-record checks at integration and a complete current-candidate check at milestone acceptance, not on every task/hook. Historical records may retain the revisions actually used.
 
 - `npm run gdd:check` checks the selected scope for unknown/missing GDD references, malformed front matter, duplicate IDs, and disagreement between the one-page index and current detail documents. It warns about the one-page size and historical revisions. With `-- --milestone <Mn>` it identifies required designs that are not approved. The lead checks those before dependent implementation; the milestone candidate must not rely on unapproved design as if it were approved.
-- `npm run gdd:impact -- <GDD-ID>` scans every record type in section 2 and prints three groups: `current` (references the document's current revision), `stale` (references an older revision), and `orphan` (references a retired or unknown ID).
+- `npm run gdd:impact -- <GDD-ID>` scans every record type in section 2 and prints four groups: `current` (references the document's current revision), `stale` (references an older revision), `kept` (references an older revision that a compatibility decision accepts for the current one), and `orphan` (references a retired or unknown ID).
 
 These tools do not read the native Agent Teams task list. For a changed GDD ID, the lead searches relevant open tasks directly. Finished tasks are covered by their file handoff or the compact `tasks/completed_refs.jsonl` index; follow the canonical handoff pointer only when its details matter. The index is emitted during normal integration, without a second full task list, duplicated handoff, or extra agent call. If an older completed task has neither readable handoff nor index row, inspect the relevant completed native history once and record its reference; do not silently treat it as unaffected.
 
@@ -64,7 +64,7 @@ When the producer changes a GDD document:
 1. The producer edits the document, raises its revision, adds a change-log row naming the changed parts, and commits `docs(gdd): <summary>`.
 2. The lead checks affected references once, using the tool when available or a targeted search. Report only meaningful effects, grouped by owner. Work using unchanged sections normally remains valid.
 3. Within the producer-approved change, the lead schedules only affected rework. Ask the producer only when scope, design, binding targets, or acceptance are still unresolved; do not request another decision for every unaffected record.
-4. New/reworked records carry the revision used. Keep historical prompt/evidence records unchanged. For a current asset intentionally kept, record one compatibility decision linking old and new revisions; do not rewrite every historical record merely to make revision numbers match.
+4. New/reworked records carry the revision used. Keep historical prompt/evidence records unchanged. For a current asset intentionally kept, record one compatibility decision in `docs/decisions.md` naming the record and both revisions, so later impact checks report it as `kept`; do not rewrite every historical record merely to make revision numbers match.
 
 ## 4. Prompt archive
 

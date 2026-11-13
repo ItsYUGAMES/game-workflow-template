@@ -35,7 +35,7 @@ flowchart TD
 | --- | --- | --- |
 | 多角色重复读长文档 | 短入口、任务相关章节、修订未变则沿用；仅变更/冲突/上下文丢失时恢复 | AGENTS、workflow §3 |
 | AI 无法直接观察和操作游戏 | M0 必须提供 MCP 或简易 HTTP；同一运行实例的状态、动作、真实画面贯通 | agent_interface、连接记录模板 |
-| 常驻角色和往返过多 | 按需启动；deps 可选；一次完整交接；lead 后填提交信息 | CLAUDE、workflow §1–4 |
+| 常驻角色和往返过多 | 按需启动；deps 可选；一次完整交接；lead 后填提交信息 | claude_adapter、workflow §1–4 |
 | 频繁打断 | 仅取消、会造成明显浪费的失效依赖、破坏/冲突风险才中断；普通建议等任务边界 | AGENTS、workflow §3 |
 | 每任务/每提交跑 gate | docs / local / integration / milestone 四档；hook 只检查记录 | validation §2–3 |
 | 防御与测试膨胀 | 保护真实输入边界与已知风险，复用已有测试；保持保存冲突、数据合法性等必要约束 | contracts 开头、validation §1 |

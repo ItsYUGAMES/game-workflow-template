@@ -11,7 +11,7 @@ gdd_refs: [<approved_document_revision>]
 depends_on: []
 allowed_paths: [<paths>]
 base_commit: <actual_sha>
-verification_profile: docs # docs | local | integration | milestone
+verification_profile: <docs|local|integration|milestone>
 timing_or_performance: false
 status: ready
 ```

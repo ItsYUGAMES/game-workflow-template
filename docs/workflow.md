@@ -129,7 +129,7 @@ M0 supplies the app, minimal relevant contracts, run/build commands, needed tuni
 | Milestone | Outcome |
 | --- | --- |
 | M0 | App/minimal checks run; actual Agent can connect, query, act, retrieve a real capture, close and reconnect safely; isolated defaults, production exclusion, and needed tuning round-trip are demonstrated |
-| M1 | Core verbs playable with placeholders and exposed through the interface; real model simulation, relevant risk checks and representative motion/look targets exist |
+| M1 | Core verbs playable with placeholders and exposed through the interface; a `--simulate` scenario runs the real simulation modules; relevant risk checks and representative motion/look targets exist |
 | M2 | Complete start/play/end slice; harness or verified capture adapter drives/replays and records it; selected important events have keyframes; reference and runtime videos cover the whole slice |
 | M3 | Approved content and representative model/animation quality integrated; new important demo events receive keyframes; routine actions reuse the established shot plan |
 | M4 | Agreed feel and measured performance criteria pass; blocking defects resolved; final demo path stable |
@@ -139,7 +139,7 @@ Before implementation needs a design decision, the relevant GDD states it clearl
 
 Before a milestone, check only its required GDDs. Prototype reversible alternatives while a non-blocking decision is open; label them as proposals. Producer approves new scope, binding direction, and milestones, not every ordinary implementation step.
 
-At milestone close, lead integrates ready work; tester checks the named candidate using M0 bootstrap acceptance or the full gate from M1 onward. Reviewer examines high-risk/behavioral changes; lead reviews tester/art-tool changes where relevant. Producer receives SHA, evidence, the milestone's demo scope, and concise playtest route. Repairs/tuning produce a new candidate: run affected checks while iterating and the required candidate checks once on the final acceptance candidate. Review only the changed delta unless a concrete finding expands scope. Producer accepts a named SHA; never move an existing milestone tag.
+At milestone close, lead integrates ready work; tester checks the named candidate using M0 bootstrap acceptance or the full gate from M1 onward. Reviewer examines high-risk/behavioral changes; lead reviews tester/art-tool changes where relevant. Producer receives SHA, evidence, the milestone's demo scope, and concise playtest route. Repairs/tuning produce a new candidate: run affected checks while iterating and the required candidate checks once on the final acceptance candidate. Review only the changed delta unless a concrete finding expands scope. The producer tags each candidate `snap/mN-k` and the accepted SHA `snap/mN`; existing tags stay where they are.
 
 ## 6. Documentation and cost feedback
 

@@ -55,7 +55,7 @@ tester owns the gate runner under `tools/gates/`. Full gates run on committed ca
 
 **Cheap completion hook.** tester owns the local adapter; systems wires it into `.claude/settings.json`. The adapter checks metadata and existing records only; it never starts, queues, waits for, or restarts a suite. Ordinary completion requires a handoff identifying performed checks and pending integration; it does not wait for a commit or batch checks. A candidate task (`milestone` profile) requires matching candidate records: the bootstrap record for M0, full gate from M1. Missing evidence yields one next action without launching work.
 
-Rely on blocking only after the local adapter's exit-code-2 contract is verified in bootstrap. Hook absence, failure, or non-blocking completion never proves verification passed. Codex roles meet the same record requirements without the hook. Neither role runs a full gate merely to close an implementation task.
+The adapter reports every missing-record case as exit code 2 with its own stderr message. v0.7 recorded these client behaviors; re-verify them on the installed client in bootstrap before relying on blocking: only exit code 2 blocks completion; any other exit code, a crash, a hook that fails to start, or a hook timeout lets the task complete; and exit 2 with a raw missing-file error on stderr (such as `No such file or directory`) also lets it complete. Set the hook `timeout` explicitly. Hook absence, failure, or non-blocking completion never proves verification passed. Codex roles meet the same record requirements without the hook. Neither role runs a full gate merely to close an implementation task.
 
 ## 3. Implementation completion and acceptance
 

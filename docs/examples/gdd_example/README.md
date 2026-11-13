@@ -15,7 +15,7 @@
 ## 可以看什么
 
 - **一页策划怎么写**：一句话、关键画面、玩法表、体验、设定、范围、细则与待定，正文约 600 个汉字。
-- **一页和细则怎么分工**：一页策划是开工时写的，只写关键数字和规则的大意；容差、特殊情况、完整数值表放进细则文档。M1 之后每块新内容都先写细则，比如“界面与流程”会用界面模板写在 `ui/` 下，一页策划只更新“细则与待定”。
+- **一页和细则怎么分工**：一页策划是开工时写的，只写关键数字和规则的大意；容差、特殊情况、完整数值表放进细则文档。M1 之后，已有批准文档说不清的新内容才补细则，比如“界面与流程”会用界面模板写在 `ui/` 下，一页策划只更新“细则与待定”。
 - **修改记录怎么写**：一页策划 r2 和续火系统 r2，写清了改了哪一块、为什么。
 - **图怎么配**：关键画面直接在图上标注；续火和飞蛾用 Mermaid 状态图，续火反馈用带编号的示意图。
 - **数值怎么写**：字段名和 `data/` 一致，带单位、范围和生效时机。
@@ -34,15 +34,15 @@ owner: gameplay
 gdd_refs: [GDD-RELIGHT@r2]
 depends_on: [T-02]
 allowed_paths: [src/mechanics/, data/tuning.json]
-paired_test_task: T-07t
 acceptance:
   - GDD-RELIGHT §2.2(3)：按住 interact 满 relight_hold_s，燃料回满。
   - GDD-RELIGHT §2.2(4)(5)：松手后进度按 relight_decay_ratio 回落；挥灯时立即清零。
   - relight_hold_s 和 relight_decay_ratio 能在调参面板里调，生效时机与第四章一致。
 out_of_scope: [moth_behavior, vfx]
-timing_or_performance: true
+base_commit: <actual_sha>
 verification_profile: integration
-open_decisions: []
+timing_or_performance: true
+status: ready
 ```
 
-配对的测试卡 T-07t 用同样的 `gdd_refs` 和验收条件。tester 照续火系统“六、验收要点”，在 `tests/regression/mechanics/` 下写测试。
+续火的时间窗口属于要保留测试的风险。lead 在这个功能批次集成时给 tester 开一张测试任务，可以和飞蛾等相关任务共用；tester 照续火系统“六、验收要点”，在 `tests/regression/mechanics/` 下写测试。
