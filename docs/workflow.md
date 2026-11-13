@@ -74,13 +74,12 @@ out_of_scope: [new_mechanics]
 context_refs:
   - docs/gdd/systems/core_mechanic.md#rules
   - docs/contracts.md#3-time-and-reproducibility
-base_commit: <actual_sha>
 verification_profile: local
 timing_or_performance: false
 status: ready
 ```
 
-Include only this task's constraints, relevant sections, and acceptance. Authoritative references override summaries. Read each section once and retain its revision. Do not open every nested link, reload the full GDD, inspect all archived prompts, or repeat environment discovery.
+Include only this task's constraints, relevant sections, and acceptance. Authoritative references override summaries. Read each section once and retain its revision. Ordinary task packets do not require a manually copied base commit SHA or asset hash; the lead can inspect Git history/diff to resolve concurrent changes. Do not open every nested link, reload the full GDD, inspect all archived prompts, or repeat environment discovery.
 
 Refresh after an input revision changes, a finding contradicts cached context, ownership changes, or context is lost. Use the base revision and actual diff to find changes. Check current files before editing shared data.
 

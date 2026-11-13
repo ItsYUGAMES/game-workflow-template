@@ -29,7 +29,7 @@ Keep this entry below 20 KB. At project bootstrap, add the approved one-sentence
 - M0 must provide working direct Agent access through MCP or simple local HTTP. Use that interface for normal state/action/capture work; confirm the actual game instance after reconnect/restart. Test runs default to isolated storage, muted audio, and no focus-stealing window. A callable interface does not trigger a check or screenshot after every action.
 - Preserve approved tuning. Validate external data at its boundary. Keep simulation separate from presentation/editor code; use established naming, units, versions, and contracts. Do not rebuild architecture for a local change.
 - Write assigned paths only. Hand off before transferring ownership; commit only task-owned changes. No destructive Git operations, secrets in records, or unapproved external actions.
-- Generate through approved tools or `tools/`, never from `src/`. Archive the exact submitted prompt once with references/outputs; link it rather than repeating it in chat.
+- Generate through approved tools or `tools/`, never from `src/`. Archive the exact submitted prompt once with source/output paths and revisions; link it rather than repeating it in chat. Ordinary assets/tasks do not require manually tracked hashes; tool-compute a digest only for justified exact-content checks ([traceability](docs/traceability.md) §0).
 - Keyframes are event-driven: require images only for selected important visual/gameplay events, with a short reason. Routine movement, repeated unchanged actions, and ordinary UI operations need no individual keyframes. Keep the full demo path and separate reference/runtime videos (assets_and_targets.md §6).
 
 ## Work without unnecessary interruptions

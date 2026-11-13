@@ -19,7 +19,7 @@ External generation uses one of three paths: an MCP tool called directly by the 
 Asset IDs use prefixes `chr`, `enm`, `prp`, `env`, `wpn`, `fx`, `ui`, `sfx`, `mus`, and `tgt`. Keep IDs stable. Register every managed asset in `assets/manifest.json` with at least:
 
 - `id`, `kind`, `source` (`procedural`, `generated`, `pack`, or `manual`), and file or generator path;
-- content revision/hash, generator parameter/seed reference where applicable, and schema version;
+- approved asset revision (or a distinct versioned file), generator parameter/seed reference where applicable, and schema version; content digest only for explicit L3 integrity needs;
 - measured triangles, texture dimensions/formats, required clips, socket profile, and pivot/orientation profile, where applicable;
 - `gdd_refs` for the GDD documents the asset serves;
 - for generated assets, `prompt_record` pointing to the accepted record in `assets/prompts/`; for packs and manual work, source URL, acquisition date, and license or usage evidence;
@@ -44,7 +44,7 @@ Use [the art prompt template](templates/art_prompt.md) for images, models, anima
 | Motion | Key poses, phases, contacts, direction/speed, loop/transition behavior, and root-motion treatment; distinguish desired visual timing from approved simulation timing |
 | Video shot | Duration, start/end state, important `event_id` values, ordinary action spans, visible responses, and selected keyframe references |
 
-Resolve references into the exact instructions and supported input fields sent to the provider; a repository path alone does not give a provider access to an image or bible. Store that exact final prompt, actual parameters, input hashes, and outputs in the append-only prompt archive ([traceability](traceability.md) §4), including rejected attempts. The prompt specification is reusable planning material; it is not evidence that a generation call occurred.
+Resolve references into the exact instructions and supported input fields sent to the provider; a repository path alone does not give a provider access to an image or bible. Store that exact final prompt, actual parameters, input paths/revisions, and output paths/revisions in the append-only prompt archive ([traceability](traceability.md) §4), including rejected attempts. The prompt specification is reusable planning material; it is not evidence that a generation call occurred.
 
 ## 2. Interfaces by asset kind
 
@@ -85,7 +85,7 @@ For the selected Blender exporter, verify the convention once using an asymmetri
 
 Keep canonical GLB interchange assets uncompressed. Web-only compression may produce separate build artifacts after compatibility and quality checks; it must not replace the source GLB. Verify the pinned Godot importer and required glTF extensions during port planning rather than assuming permanent engine support or non-support.
 
-`tools/validate_assets.ts` checks profiles by asset kind, required files, provenance references, budgets, animation mapping, sockets, and generator determinism. Some properties need explicit metadata or a visual fixture; do not pretend every pivot/orientation semantic can be inferred from a file alone.
+`tools/validate_assets.ts` checks profiles by asset kind, required files, provenance references, budgets, animation mapping, sockets, and generator determinism. An ordinary asset without an optional content digest must not fail validation; require one only for an explicitly declared L3 exact-integrity check. Some properties need explicit metadata or a visual fixture; do not pretend every pivot/orientation semantic can be inferred from a file alone.
 
 ## 5. Lighting, shaders, and VFX
 
@@ -122,7 +122,7 @@ Before generating a shot containing a selected event, provide at least one actua
 | --- | --- |
 | Event or action span | `event_id`, trigger/input or script, precondition, visible response and resulting state |
 | Keyframe selection | `keyframe_required`; `importance_reason` for selected events |
-| Selected important event | Image path/hash and phase; any explicit reuse of an existing suitable image |
+| Selected important event | Image path, approved revision and phase; any explicit reuse of an existing suitable image |
 | Reference video | Shot ID and final time range for the event/span; response time for important events |
 | Runtime verification | Actual capture/time range, expected/observed result, available event/input log or inspection evidence, and `pass`, `fail`, or `unverified` |
 
@@ -144,7 +144,7 @@ Define these fields before timing-dependent implementation:
 
 | Field | Required meaning |
 | --- | --- |
-| `schema_version`, `target_id`, `source_sha256` | Stable schema, package identity, and clip provenance |
+| `schema_version`, `target_id`, `source_ref` | Stable schema, package identity, and source clip path plus revision; optional `source_sha256` only when exact-content verification is needed |
 | `gdd_refs`, `prompt_record` | GDD documents the target illustrates; prompt record of the generated clip |
 | `source_timebase`, `source_fps`, `is_variable_frame_rate` | Original timing, distinct from sampling rate |
 | `sample_fps`, `frame_index_base`, `clip_start_s` | Sampling convention; use zero-based indices |
@@ -152,9 +152,9 @@ Define these fields before timing-dependent implementation:
 | `markers` | Named start/contact/end markers with measured time, uncertainty, and method |
 | `binding` | Metric, expected value/range, units, tolerance, measurement method, and producer approval reference |
 | `non_binding` | Explicit exclusions and their reason |
-| `approval_revision` | Producer-approved target revision, linked to the source hash |
+| `approval_revision` | Producer-approved target revision, linked to the source reference and version |
 
-For a constant-rate zero-based sample sequence, `t_s = clip_start_s + frame_index / sample_fps`. Prefer actual source timestamps for variable-rate input. Never confuse a source frame index with a sampled frame index. Twelve samples per second are useful for contact sheets, but adjacent samples are about 83 ms apart; do not infer millisecond hitstop or contact timing from them. Use source-rate inspection and game telemetry for tighter tolerances, and report uncertainty.
+For a constant-rate zero-based sample sequence, `t_s = clip_start_s + frame_index / sample_fps`. For ordinary reference and timing packages, stable file paths, revisions, timestamps, and event mappings are sufficient; do not block on a missing source hash. When byte-exact media identity is required (for example frozen M5 deliverables), calculate its digest automatically at packaging/acceptance and record the exact file it covers. Prefer actual source timestamps for variable-rate input. Never confuse a source frame index with a sampled frame index. Twelve samples per second are useful for contact sheets, but adjacent samples are about 83 ms apart; do not infer millisecond hitstop or contact timing from them. Use source-rate inspection and game telemetry for tighter tolerances, and report uncertainty.
 
 Target timings initialize tuning only before producer approval of those fields. Subsequent playtest decisions take precedence and must record the intentional deviation or update the target revision. Reference comparison cannot silently undo approved tuning.
 
