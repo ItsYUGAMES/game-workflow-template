@@ -30,8 +30,8 @@ Specific paths override broader rows. Transfer ownership after release or confir
 
 | Paths/operation | Owner |
 | --- | --- |
-| `src/core/`, `src/systems/`, `src/ui/`, `src/editor/`, `src/main.ts` | systems |
-| `data/rules.json`, `data/levels/`, `tools/dev/`, root build config, `.claude/` | systems |
+| `src/core/`, `src/systems/`, `src/platform/`, `src/dev/`, `src/ui/`, `src/editor/`, `src/main.ts` | systems |
+| `data/rules.json`, `data/levels/`, `data/i18n/`, `tools/dev/`, `tools/agent/`, root build config, `.claude/` | systems |
 | `package.json`, `package-lock.json` | systems; optionally leased to deps for approved installs |
 | `src/player/`, `src/camera/`, `src/mechanics/`, `data/tuning.json` | gameplay |
 | `src/visual/lighting/`, `src/visual/shaders/`, `src/visual/post/`, `src/visual/vfx/`, `data/visual/lighting.json`, `data/visual/vfx/` | lookdev |
@@ -50,11 +50,15 @@ Producer-approved values override path ownership. Record changed field paths/rev
 
 Records have one home: `docs/gdd/` for design, `docs/decisions.md` for decisions, `tasks/milestones/` for candidates, and `handoff/<role>/environment/` for observed environments. Create records when needed, not an empty documentation tree. Link existing records instead of copying their text into tasks.
 
+Decision entries distinguish `confirmed` (with date and approval/source), `proposed` (for example pending playtest), and `open`. Preserve superseded decisions with their date and replacement link rather than silently deleting history. `docs/gdd/one_page.md` remains the concept source; do not create a competing `Documents/concept.md`. Runtime discovery files and local credentials stay under ignored `.agent/`; tasks link a short [connection record](templates/agent_connection.md).
+
 ## 3. Bounded tasks and context reuse
 
 Use one `T-<nn>` ID space. Claude tasks live in the native task list; Codex uses `tasks/codex/<task_id>.md`. Do not assume task state is shared across clients. Dependency messages contain the result and artifact/revision only.
 
 Use [the task packet](templates/task_packet.md) for a coherent feature or asset batch. Avoid separate tasks for each file, function, screenshot, or check command.
+
+Runtime tasks reuse the current Agent connection record and request only relevant state/actions. An interface gap is one scoped systems dependency, not repeated desktop automation or an instruction to launch every specialist. Keep one controller per test instance; independent interactive work gets isolated instances.
 
 ```yaml
 id: T-07
@@ -120,13 +124,13 @@ Use Conventional Commits and verify the intended branch. Pushing needs explicit 
 
 This repository contains specifications/templates, not runtime automation. Command names describe interfaces to implement when needed; absence is not success. Do not build an orchestration platform before the first playable loop.
 
-M0 supplies the app, minimal relevant contracts, run/build commands, one smoke/capture path, and needed tuning/save behavior. Keep commits manual until a helper saves repetition. Add a record-reading hook only once the client and gate exist. Prove a generation path before its output becomes a dependency.
+M0 supplies the app, minimal relevant contracts, run/build commands, needed tuning/save behavior, and working MCP or simple HTTP access to the actual game. Prove the direct Agent connection/action/state/capture/close/reconnect loop in [agent_interface](agent_interface.md) §6. Start with one transport and one observable foundation action; no complete editor or shared-engine platform is required. Keep commits manual until a helper saves repetition. Add a record-reading hook only once the client and gate exist. Prove a generation path before its output becomes a dependency.
 
 | Milestone | Outcome |
 | --- | --- |
-| M0 | App/minimal checks run; ownership, environment, relevant contracts, and needed tuning round-trip are known |
-| M1 | Core verbs playable with placeholders; relevant risk checks and representative motion/look targets exist |
-| M2 | Complete start/play/end slice; storyboard selects important events and supplies their keyframes; complete reference video and runtime walkthrough cover the whole slice |
+| M0 | App/minimal checks run; actual Agent can connect, query, act, retrieve a real capture, close and reconnect safely; isolated defaults, production exclusion, and needed tuning round-trip are demonstrated |
+| M1 | Core verbs playable with placeholders and exposed through the interface; real model simulation, relevant risk checks and representative motion/look targets exist |
+| M2 | Complete start/play/end slice; harness or verified capture adapter drives/replays and records it; selected important events have keyframes; reference and runtime videos cover the whole slice |
 | M3 | Approved content and representative model/animation quality integrated; new important demo events receive keyframes; routine actions reuse the established shot plan |
 | M4 | Agreed feel and measured performance criteria pass; blocking defects resolved; final demo path stable |
 | M5 | Final candidate, complete captured gameplay video, reference-video package, report, provenance, portable exports, and remaining concerns delivered |
@@ -140,5 +144,7 @@ At milestone close, lead integrates ready work; tester checks the named candidat
 ## 6. Documentation and cost feedback
 
 Keep canonical ownership, verification, and asset rules in their documents. Task packets link them. Do not duplicate policies across role instructions or README; keep historical narrative outside automatic session entry points.
+
+Stable repeated operations such as source registration, palette synchronization, asset import, packaging, and demo export belong in owned `tools/` scripts when needed. Demo trimming edits a release copy, never the source content. Record a lesson where it changes behavior; only enduring cross-task rules belong in AGENTS.md. Use coherent batch commits rather than one compulsory commit per checklist item.
 
 At each completed feature batch, record available counters once: fresh/cached input tokens separately, output tokens, model, tool calls, inter-agent messages, context reloads, check runs, wall time, and rework. Use `unknown` for unexposed counters. Compare similar tasks including retries. Reduced document size is not a measured token/cost reduction. Remove repeated steps that contribute no decision/evidence while preserving approvals and correctness boundaries.

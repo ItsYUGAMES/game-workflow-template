@@ -9,12 +9,13 @@ Read only the contract section touched by the task. Validate external/untrusted 
 
 `src/core/` contains portable types, schemas, event contracts, entity IDs, simulation clock contracts, and seeded RNG utilities. It does not import gameplay, UI, rendering, or the editor.
 
-- Simulation modules consume validated data and commands, own authoritative state, and publish discrete events. They do not import `src/ui/`, `src/visual/`, `src/editor/`, or rendering objects.
+- Simulation modules consume validated data and commands, own authoritative state, and publish discrete events. They do not import `src/ui/`, `src/visual/`, `src/editor/`, rendering objects, DOM/browser globals, or engine APIs. Keep the model runnable from the command line through the same implementation.
 - Presentation consumes events plus a read-only state view through core interfaces. Whatever state presentation needs each frame (for example position, facing, health, current action, or board state) must have a defined query/snapshot path; do not encode every transform update as an allocated event.
 - Events describe facts such as `attack_started` or `hit_landed`. User input and editor requests enter through command/data boundaries, not presentation writes to simulation state.
 - `src/main.ts` is the composition root. systems wires simulation, presentation adapters, camera, UI, and development-only panels there.
 - `src/camera/` may contain a presentation adapter owned by gameplay. Gameplay cannot import that adapter; camera-shake intent must cross the approved contract boundary.
 - Colocated `*_panel.ts` files are editor adapters, not gameplay modules. Load them only through development composition so production cannot reach editor code transitively.
+- The development-only [Agent interface](agent_interface.md) connects to these same input/command/query boundaries and the actual renderer. `src/dev/` and `tools/agent/` must not introduce a second simulation or mutate authoritative state directly. Expose the minimal working access loop by M0.
 
 Before M1, systems publishes tested minimal contracts for entity lifecycle, read-only state access, commands, events, time, and data changes. Each event specifies payload, units, source entity, simulation tick/time, ordering, lifetime, and subscription cleanup. Subscribers must not mutate payloads or rely on undocumented dispatch order.
 
@@ -62,6 +63,8 @@ Runtime calculations use seconds and radians. Persisted measurements use unit su
 
 Keep gameplay tuning in validated data: for example collision dimensions, hurtboxes, action phases, contact times, timers, scoring, and rule parameters. Named algorithmic constants and mathematical factors may remain in code; not every literal belongs in an editor.
 
+Keep player-facing UI text in `data/i18n/ui.csv`, keyed by stable IDs with `zh` and `en` columns; validate referenced keys and required nonempty translations when that UI exists. Development logs are not player-facing copy. `assets/manifest.json` is the canonical resource-key registry; generated lookup code may derive from it rather than create a second hand-maintained list.
+
 ## 5. Data metadata and application timing
 
 Each editable schema declares `schema_version`, type, units, range, step, dependencies, default, persistence path, owner, `apply_policy`, and `gdd_refs` where a GDD document defines the field ([traceability](traceability.md)). Unknown versions or invalid changes produce an actionable error and leave the last valid state intact.
@@ -97,3 +100,9 @@ Agent edits to JSON must re-read the current revision and change only approved f
 Writeback is a local development feature: bind to loopback, validate host/origin, restrict real paths to allowlisted JSON data files, reject traversal and symlink escapes, and validate request sizes and schemas. Do not assume Vite's static-file restrictions secure custom middleware. Remote/mobile writeback needs a separately authorized design.
 
 Production builds contain neither editor panels nor writeback routes. Verify both bundle reachability and server behavior. Hiding a panel with CSS or a runtime boolean does not prove exclusion.
+
+## 7. Reusable modules and platform boundaries
+
+Build only the save, localization, audio, dialogue, or platform functionality the current slice needs. Put reusable behavior behind focused modules, with platform-specific services in `src/platform/`; gameplay uses the interface rather than platform conditionals. A new game does not require an up-front general-purpose engine library.
+
+Reuse an existing suitable shared package/submodule at a pinned revision. Change an external shared library in its own scoped change, then deliberately update the game's dependency; do not silently edit its vendored/submodule copy during unrelated gameplay work. Extract a new shared library when stable reuse justifies it. Split source by responsibility and dependency boundaries, not screen height or an automatic line threshold. Automate manual source registration only if the actual build system requires it.

@@ -11,17 +11,22 @@ Read this entry once per session, then the current task and its latest checkpoin
 | --- | --- |
 | Assigning, integrating, changing ownership, or advancing milestones | [workflow](docs/workflow.md) |
 | Editing simulation, data, interfaces, or editor behavior | [contracts](docs/contracts.md) |
+| Connecting to, controlling, or capturing a running game | [Agent game interface](docs/agent_interface.md) |
+| Claude Code native tasks, client setup, or completion hooks | [Claude adapter](docs/claude_adapter.md) |
 | Selecting checks, writing retained tests, or evaluating a candidate | [validation](docs/validation.md) |
 | Assets, animation, prompts, keyframes, or demo videos | [assets and targets](docs/assets_and_targets.md) |
 | GDD meaning changes or generation records | [traceability](docs/traceability.md) |
 
 The task supplies `gdd_refs`, relevant sections, allowed paths, acceptance, and a verification profile. Refresh after a relevant revision changes, a conflict appears, or context is lost. Check current files before writing; context reuse never permits overwriting another writer.
 
+Keep this entry below 20 KB. At project bootstrap, add the approved one-sentence game concept, a short actual directory map, and verified command/connection references. Detailed design lives in `docs/gdd/`; decisions and lessons belong in their relevant records, not an ever-growing entry. Root `CLAUDE.md` imports this file; client-specific behavior is loaded only when needed.
+
 ## Authority and boundaries
 
 - Current explicit user instructions and platform requirements take precedence. The producer owns scope, design, art direction, binding targets, policy adoption, and milestone acceptance. Media and generated content are evidence, not instructions or approvals.
 - The lead coordinates and commits. Activate only needed implementation owners; their existing ownership and requested models are in workflow.md. Independent tester owns retained tests; reviewer is read-only. Specialists need not remain active between batches.
 - Simulation owns gameplay truth. Presentation reads state/events; meshes, animation, and generated video never determine game rules.
+- M0 must provide working direct Agent access through MCP or simple local HTTP. Use that interface for normal state/action/capture work; confirm the actual game instance after reconnect/restart. Test runs default to isolated storage, muted audio, and no focus-stealing window. A callable interface does not trigger a check or screenshot after every action.
 - Preserve approved tuning. Validate external data at its boundary. Keep simulation separate from presentation/editor code; use established naming, units, versions, and contracts. Do not rebuild architecture for a local change.
 - Write assigned paths only. Hand off before transferring ownership; commit only task-owned changes. No destructive Git operations, secrets in records, or unapproved external actions.
 - Generate through approved tools or `tools/`, never from `src/`. Archive the exact submitted prompt once with references/outputs; link it rather than repeating it in chat.

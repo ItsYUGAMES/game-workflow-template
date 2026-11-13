@@ -28,6 +28,8 @@ Asset IDs use prefixes `chr`, `enm`, `prp`, `env`, `wpn`, `fx`, `ui`, `sfx`, `mu
 
 Use explicit `not_applicable` for metadata that does not apply, not fabricated values. Record generated and external sources in `assets/CREDITS.md`. Unknown usage rights block distribution of the asset; use an approved placeholder if independent development can continue.
 
+Keep editable art source and a repeatable import/export path under the appropriate `tools/` owner when assets need conversion. Automate repeated manual export steps; do not assume the runtime can read every source format. Packaging and demo trimming operate on output copies, preserving source content.
+
 ### Art direction and structured prompts
 
 Keep the shared art bible in the approved GDD art document, using [the art/audio template](templates/gdd_art_audio.md). It defines the style, camera/framing, world scale, palette, lighting, shape language, materials, and persistent character identity. Reference its ID/revision and approved images from tasks instead of copying the whole bible into every task. A changed costume, weapon, proportion, palette, or camera is an explicit revision or task-specific exception, not an accidental generation variation.
