@@ -10,7 +10,6 @@ milestone: M<n>
 gdd_refs: [<approved_document_revision>]
 depends_on: []
 allowed_paths: [<paths>]
-base_commit: <actual_sha>
 verification_profile: <docs|local|integration|milestone>
 timing_or_performance: false
 status: ready
@@ -24,11 +23,12 @@ status: ready
 
 ## 本次需要的上下文
 
-| 文件与章节/资源 | 修订或哈希 | 本次为什么需要 |
+| 文件与章节/资源 | 路径与适用版本 | 本次为什么需要 |
 | --- | --- | --- |
 |  |  |  |
 
 已在当前会话读过、修订未变的内容直接沿用。只列相关章节，不列项目的全部文档。遇到矛盾以实际文件和已批准决定为准。
+普通任务无需人工填写文件 Hash 或基础提交 SHA；并行改动需要比对基线时，由 lead/Git 工具记录具体提交，执行者只关注允许修改的范围。
 
 ## 执行与验证
 

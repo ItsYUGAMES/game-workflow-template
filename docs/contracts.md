@@ -88,9 +88,9 @@ systems provides the panel registry, development-only writeback, schema validati
 
 Keep persisted base data, unsaved editor changes, and the active runtime revision distinct. In-memory preview does not imply a successful disk save.
 
-1. On load, validate the JSON and retain a content hash/revision as the edit base.
+1. On load, validate the JSON and retain a server-issued base revision or opaque ETag. A write outside the editor must also invalidate the edit base; the server may compare content internally to detect unversioned external edits without exposing or manually archiving its hash.
 2. Preview a validated edit using its declared application policy. Preserve the unsaved patch separately.
-3. Save a patch with the base revision to the specific allowlisted data file. The server validates the path, schema, and current revision before writing.
+3. Save a patch with the base revision/ETag to the specific allowlisted data file. The server atomically compares the current edit base, validates path and schema, then writes; a separate check followed by unconditional write is not sufficient.
 4. If the file changed, reject the stale write and show the changed fields. Preserve both versions; do not silently choose last-write-wins or automatically overwrite producer values.
 5. Save atomically, return the actual new revision, and clear dirty state only after acknowledgement. A failed save keeps the unsaved patch visible.
 6. On external file change, update a clean editor. For a dirty editor, report a conflict and require resolution before replacing its working copy. Suppress save/watch echo loops by revision.
