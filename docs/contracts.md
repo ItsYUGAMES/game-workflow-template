@@ -1,7 +1,7 @@
 # Architecture, Data, and Editor Contracts
 
-Version: 0.8 | Date: 2026-11-13
-This is a proposed contract design, not evidence that these interfaces already exist.
+Version: 0.9 | Date: 2026-11-13
+This is a proposed contract design, not evidence that these interfaces already exist. These are the template's constraints; each project's concrete architecture is the lead's `docs/architecture.md` (workflow.md §1).
 
 Read only the contract section touched by the task. Validate external/untrusted data at ingestion or revision changes; typed internal consumers use that validated contract. Do not repeatedly parse unchanged data, wrap every internal call in defensive fallbacks, or add hypothetical recovery frameworks. Add error handling for concrete boundaries and observed failure modes. This does not relax save-conflict, path, origin, or schema checks below.
 
@@ -17,7 +17,7 @@ Read only the contract section touched by the task. Validate external/untrusted 
 - Colocated `*_panel.ts` files are editor adapters, not gameplay modules. Load them only through development composition so production cannot reach editor code transitively.
 - The development-only [Agent interface](agent_interface.md) connects to these same input/command/query boundaries and the actual renderer. `src/dev/` and `tools/agent/` must not introduce a second simulation or mutate authoritative state directly. Expose the minimal working access loop by M0.
 
-Before M1, systems publishes tested minimal contracts for entity lifecycle, read-only state access, commands, events, time, and data changes. Each event specifies payload, units, source entity, simulation tick/time, ordering, lifetime, and subscription cleanup. Subscribers must not mutate payloads or rely on undocumented dispatch order.
+Before M1, the lead defines and systems implements tested minimal contracts for entity lifecycle, read-only state access, commands, events, time, and data changes. Each event specifies payload, units, source entity, simulation tick/time, ordering, lifetime, and subscription cleanup. Subscribers must not mutate payloads or rely on undocumented dispatch order.
 
 `AnimationDriver` is a presentation adapter. It maps simulation action state and time to animation states; it does not decide damage, collision, movement, or completion. Document playback speed, blending, interruption, missing-clip fallback, and teardown. Missing required animation support fails asset validation unless a recorded fallback is accepted.
 
@@ -25,9 +25,9 @@ Before M1, systems publishes tested minimal contracts for entity lifecycle, read
 
 M0 freezes the initial meaning and compatibility rules of the contracts. It does not make every source file immutable.
 
-- systems owns all `src/core/` edits and coordinates affected consumers.
+- The lead decides contract changes and records them in `docs/architecture.md`; systems makes all `src/core/` edits and coordinates affected consumers.
 - Additive, backward-compatible events, optional fields with safe defaults, and new schemas may be approved by lead when existing semantics and saved data remain valid. Include consumer checks and version metadata.
-- Renames, removals, required new fields, changed units, changed event ordering, changed timing semantics, or data migrations require producer approval before implementation.
+- Renames, removals, required new fields, changed units, changed event ordering, changed timing semantics, or data migrations are breaking changes: the lead decides them before implementation. Producer approval is also required when a change alters approved design meaning, protected tuning or saved data, or scope.
 - Do not evade review with an untyped event bus, duplicated schemas, or casts. An allegedly additive change that breaks a consumer is a breaking change.
 - Preserve stable resource IDs, event names, input actions, and approved schema semantics across the future port; an adapter may change the engine implementation.
 
@@ -88,9 +88,9 @@ systems provides the panel registry, development-only writeback, schema validati
 
 Keep persisted base data, unsaved editor changes, and the active runtime revision distinct. In-memory preview does not imply a successful disk save.
 
-1. On load, validate the JSON and retain a content hash/revision as the edit base.
+1. On load, validate the JSON and retain a server-issued base revision or opaque ETag. A write outside the editor must also invalidate the edit base; the server may compare content internally to detect unversioned external edits without exposing or manually archiving its hash.
 2. Preview a validated edit using its declared application policy. Preserve the unsaved patch separately.
-3. Save a patch with the base revision to the specific allowlisted data file. The server validates the path, schema, and current revision before writing.
+3. Save a patch with the base revision/ETag to the specific allowlisted data file. The server atomically compares the current edit base, validates path and schema, then writes; a separate check followed by unconditional write is not sufficient.
 4. If the file changed, reject the stale write and show the changed fields. Preserve both versions; do not silently choose last-write-wins or automatically overwrite producer values.
 5. Save atomically, return the actual new revision, and clear dirty state only after acknowledgement. A failed save keeps the unsaved patch visible.
 6. On external file change, update a clean editor. For a dirty editor, report a conflict and require resolution before replacing its working copy. Suppress save/watch echo loops by revision.

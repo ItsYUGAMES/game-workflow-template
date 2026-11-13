@@ -1,6 +1,6 @@
 # Agent Access to the Running Game
 
-Version: 0.8 | Date: 2026-11-13
+Version: 0.9 | Date: 2026-11-13
 Status: Implementation contract for projects adopting this template. This repository does not contain a running game, MCP server, or HTTP service.
 
 ## 1. Required outcome and ownership
@@ -13,7 +13,7 @@ The normal automation route is the game interface. Extend a missing required ope
 
 ## 2. Choose one working connection
 
-Implement one route that the installed Agent can actually call:
+The lead chooses one route that the installed Agent can actually call and records it in `docs/architecture.md`; systems implements it:
 
 | Route | Suitable connection | Requirements |
 | --- | --- | --- |

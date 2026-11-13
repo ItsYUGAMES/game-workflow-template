@@ -39,7 +39,6 @@ acceptance:
   - GDD-RELIGHT §2.2(4)(5)：松手后进度按 relight_decay_ratio 回落；挥灯时立即清零。
   - relight_hold_s 和 relight_decay_ratio 能在调参面板里调，生效时机与第四章一致。
 out_of_scope: [moth_behavior, vfx]
-base_commit: <actual_sha>
 verification_profile: integration
 timing_or_performance: true
 status: ready

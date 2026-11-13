@@ -1,8 +1,15 @@
 # Design Traceability and Prompt Archive
 
-Version: 0.8 | Date: 2026-11-13
+Version: 0.9 | Date: 2026-11-13
 
-Read sections 1–3 only when design references change, and section 4 when generating or registering media. This document links affected work to design revisions and preserves exact generation provenance. It is not a mandatory reread for every role or task.
+Section 0 is the identity policy every record follows. Read sections 1–3 only when design references change, and section 4 when generating or registering media. This document links affected work to design revisions and preserves exact generation provenance. It is not a mandatory reread for every role or task.
+
+## 0. Lightweight identity policy
+
+- **L1 — ordinary work:** Identify assets, prompts, images, videos, and task inputs by stable ID, file path, and an approved revision when content changes. Do not require per-file SHA-256 in everyday generation, task packets, handoffs, or storyboards. Do not silently overwrite an approved version: increase its revision or write a new versioned file.
+- **L2 — integration:** Use Git's actual diff/commit and the relevant task, GDD, resource revisions, and verification results. The lead/tool owns commit identity; workers do not copy hashes through messages. An unchanged filename or unbumped revision is insufficient evidence if Git shows the content changed.
+- **L3 — exact identity when justified:** Use a tool-computed content digest only for reproducible byte-exact inputs, integrity checking of frozen important media, or a documented external requirement. Compute and compare it automatically; keep it out of ordinary Agent context. Git commit SHA remains mandatory for exact milestone candidates and their full-gate results.
+- **Concurrency is separate:** Editor save-conflict protection and running-game `instance_id` / `command_id` checks remain mandatory; they do not require Agent-maintained asset hashes. See [editor contracts](contracts.md#6-editor-save-and-hot-reload) and [game interface](agent_interface.md#3-small-operation-surface).
 
 ## 1. GDD documents and IDs
 
@@ -72,7 +79,7 @@ Every generation call gets a prompt record, including attempts that are later re
 
 Store each record at `assets/prompts/<resource_id>/<generation_id>.md`, with YAML front matter and the exact submitted prompt. `generation_id` is unique and never reused. art_tools maintains the archive/index. A generating role may receive explicit ownership of its new record paths and write them directly; otherwise it includes the call details in its single batch handoff. Do not start another agent or send a message for each generation attempt.
 
-Compose prompts from the approved visual baseline, an asset/action specification, and shot-specific differences using [the art prompt template](templates/art_prompt.md). Task context keeps component references/revisions; the generation record stores the fully resolved prompt actually sent, including negative instructions, actual parameters, and input hashes. A hash/link without the submitted text cannot reproduce the request. Archive once without echoing the full prompt through every agent conversation. Load only the relevant accepted record or failed attempt when revising an asset.
+Compose prompts from the approved visual baseline, an asset/action specification, and shot-specific differences using [the art prompt template](templates/art_prompt.md). Task context keeps component references/revisions; the generation record stores the fully resolved prompt actually sent, including negative instructions, actual parameters, and input file paths/revisions. A path/link without the submitted text and actual inputs cannot reproduce the request. Archive once without echoing the full prompt through every agent conversation. Load only the relevant accepted record or failed attempt when revising an asset.
 
 For reference videos, link the storyboard revision and relevant `event_id` values. Retain keyframe mappings for selected important events (`keyframe_required: true`) and the reason they matter. Routine spans may have no images; complete-path coverage is checked separately from important-event image coverage (assets_and_targets.md §6).
 
@@ -85,18 +92,19 @@ For reference videos, link the storyboard revision and relevant `event_id` value
 | `method` | `mcp`, `api`, or `manual` |
 | `provider`, `model`, `model_version` | As reported by the tool or provider. Write `unknown` when it is not reported; never guess |
 | `parameters` | Every other setting sent: size, aspect ratio, duration, quality, seed, mode, and so on |
-| `inputs` | Reference files, each with repository path and SHA-256 |
+| `inputs` | Reference paths or source URLs and versions when known; include the actual files sent to the provider |
 | `provider_job_id` | Request or job ID, when the provider returns one |
 | `generated_at` | ISO 8601 time with offset |
-| `outputs` | Output files, each with path and SHA-256 |
+| `outputs` | Output file paths and accepted revisions; optional tool-generated digest for L3 |
 | `status` | `pending`, `accepted`, `rejected`, or `superseded` |
 | `status_by`, `status_at`, `status_reason` | Who changed the status, when, and why |
 
 Rules:
 
-- A manual request (`tasks/manual_requests/<request_id>.md`) becomes a prompt record when the producer fulfils it. art_tools copies the request into the archive and fills in model version, job ID, time, and output hashes from what the producer supplied.
+- A manual request (`tasks/manual_requests/<request_id>.md`) becomes a prompt record when the producer fulfils it. art_tools copies the request into the archive and fills in model version, job ID, time, and output paths/revisions from what the producer supplied.
 - The manifest entry of a generated asset points to its accepted record in a `prompt_record` field. A generated asset without an accepted prompt record fails asset validation.
 - Rejected outputs may be deleted; their records stay, with the rejection reason, so the next attempt does not repeat a failed prompt.
 - When a generation edits or extends an earlier output, list that output among `inputs`. This keeps a chain from the final asset back to the first prompt.
 - Prompt text, inputs, parameters, and original outputs are immutable per attempt. Status metadata may be updated with who/when/why; a revised prompt is a new attempt. Record unavailable provider metadata as `unknown` instead of asking the producer to reconstruct it repeatedly.
+- Keep source, license, prompt, provider, meaningful parameters and acceptance/rejection reasons. A missing optional content hash never blocks an ordinary asset; an explicitly required L3 integrity check must pass before the relevant exact-content acceptance.
 - Never write API keys, tokens, or private account data into a record.

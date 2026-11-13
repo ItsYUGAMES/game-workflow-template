@@ -1,17 +1,17 @@
 # Workflow and Ownership
 
-Version: 0.8 | Date: 2026-11-13
-Proposed policy for adoption. Read the section needed for the current task.
+Version: 0.9 | Date: 2026-11-13
+Adopted by the producer on 2026-11-13. Read the section needed for the current task.
 
 ## 1. Roles, activation, and decisions
 
-The producer owns scope, design, art direction, binding targets, policy adoption, and milestone acceptance. The lead coordinates and commits. Owners choose reversible implementation details within approved constraints. Tester independently writes retained tests; reviewer does not edit the reviewed implementation.
+The producer owns scope, design, art direction, binding targets, policy adoption, and milestone acceptance. The lead decides the core architecture, coordinates, and commits. Owners implement within the approved design and the lead's architecture, choosing reversible implementation details. Tester independently writes retained tests; reviewer does not edit the reviewed implementation.
 
 The existing requested roster is preserved below. Labels are configuration intentions, not proof of model availability. Verify effective model/client once when starting a role and after an environment change. Do not launch everyone simply because this table lists them.
 
 | Role | Requested runtime/model | Work |
 | --- | --- | --- |
-| lead | Claude Code, `claude-fable-5-2`, high | Coordination and Git commits |
+| lead | Claude Code, `claude-fable-5-2`, high | Core architecture, coordination, and Git commits |
 | gameplay, systems, lookdev | Claude teammates, `claude-opus-5-5`, high | Assigned game-source areas |
 | tester | Codex, `gpt-6-astra`, high | Risk tests, integration/candidate verification |
 | art_tools | Codex, `gpt-6-astra`, medium | Assets, prompts, targets, tools |
@@ -23,6 +23,8 @@ Default activation is lead plus the current feature owner. Add another owner onl
 Lead approves new dependencies and exact versions. systems may install them directly. Delegate to deps only when it is a worthwhile independent job. Existing authorized packages need no repeated approval conversation.
 
 For a genuine missing decision, report the question, recommendation, affected work, and last useful independent step once. Group non-blocking questions for the next review boundary. Silence does not approve a new gameplay rule or binding art direction.
+
+**Architecture.** The lead decides the core architecture before dispatching M0 implementation tasks and records it in `docs/architecture.md`: the stack and actual directory map; module boundaries and dependency direction; the core contracts the current milestone needs (commands, events, state queries, time, data); the Agent interface route; and what is deliberately deferred. Decide what the current milestone needs and extend the record as later milestones require. The lead writes this record, not game source; systems implements the core contracts and other owners build within the record. An owner who needs a structural change (a new module or shared interface, a changed contract, a new dependency direction) proposes it to the lead with the reason and continues once the lead has updated the record. The lead checks each task's diff against the record before committing. The lead asks the producer only when a change alters approved design meaning, protected tuning or saved data, or scope.
 
 ## 2. Ownership and records
 
@@ -38,7 +40,8 @@ Specific paths override broader rows. Transfer ownership after release or confir
 | Remaining `src/visual/`, `data/visual/`, `assets/`, `targets/`, remaining `tools/` | art_tools |
 | `tests/`, test/Playwright config, `tools/gates/`, `tools/perf/` | tester |
 | Colocated `*_panel.ts` | Data owner; imported through development composition only |
-| `AGENTS.md`, `CLAUDE.md`, `docs/`, `roles/` | Producer; agents may edit a scoped draft when requested |
+| `docs/architecture.md` | lead |
+| `AGENTS.md`, `CLAUDE.md`, remaining `docs/`, `roles/` | Producer; agents may edit a scoped draft when requested |
 | `tasks/codex/`, `tasks/milestones/`, `tasks/completed_refs.jsonl` | Lead; assigned owner updates its status/handoff |
 | `tasks/manual_requests/`, `handoff/<role>/`, `qa/evidence/<task_id>/<role>/`, `tmp/probes/<role>/` | Named/requesting role |
 | Review reports | reviewer, outside the reviewed source tree |
@@ -74,15 +77,14 @@ out_of_scope: [new_mechanics]
 context_refs:
   - docs/gdd/systems/core_mechanic.md#rules
   - docs/contracts.md#3-time-and-reproducibility
-base_commit: <actual_sha>
 verification_profile: local
 timing_or_performance: false
 status: ready
 ```
 
-Include only this task's constraints, relevant sections, and acceptance. Authoritative references override summaries. Read each section once and retain its revision. Do not open every nested link, reload the full GDD, inspect all archived prompts, or repeat environment discovery.
+Include only this task's constraints, relevant sections, and acceptance. Authoritative references override summaries. Read each section once and retain its revision. Ordinary task packets do not require a manually copied base commit SHA or asset hash; the lead can inspect Git history/diff to resolve concurrent changes. Do not open every nested link, reload the full GDD, inspect all archived prompts, or repeat environment discovery.
 
-Refresh after an input revision changes, a finding contradicts cached context, ownership changes, or context is lost. Use the base revision and actual diff to find changes. Check current files before editing shared data.
+Refresh after an input revision changes, a finding contradicts cached context, ownership changes, or context is lost. Use the recorded revisions and the actual Git diff to find changes. Check current files before editing shared data.
 
 Use [a checkpoint](templates/checkpoint.md) at handoff, context reset, or meaningful pause only. Keep current decisions, files, evidence links, and next action. Update one active checkpoint; read completed histories only for a specific question.
 
@@ -124,7 +126,7 @@ Use Conventional Commits and verify the intended branch. Pushing needs explicit 
 
 This repository contains specifications/templates, not runtime automation. Command names describe interfaces to implement when needed; absence is not success. Do not build an orchestration platform before the first playable loop.
 
-M0 supplies the app, minimal relevant contracts, run/build commands, needed tuning/save behavior, and working MCP or simple HTTP access to the actual game. Prove the direct Agent connection/action/state/capture/close/reconnect loop in [agent_interface](agent_interface.md) §6. Start with one transport and one observable foundation action; no complete editor or shared-engine platform is required. Keep commits manual until a helper saves repetition. Add a record-reading hook only once the client and gate exist. Prove a generation path before its output becomes a dependency.
+The lead records the architecture first (§1). M0 supplies the app, minimal relevant contracts, run/build commands, needed tuning/save behavior, and working MCP or simple HTTP access to the actual game. Prove the direct Agent connection/action/state/capture/close/reconnect loop in [agent_interface](agent_interface.md) §6. Start with one transport and one observable foundation action; no complete editor or shared-engine platform is required. Keep commits manual until a helper saves repetition. Add a record-reading hook only once the client and gate exist. Prove a generation path before its output becomes a dependency.
 
 | Milestone | Outcome |
 | --- | --- |

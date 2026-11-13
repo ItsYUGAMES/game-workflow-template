@@ -1,7 +1,7 @@
 # Claude Code Adapter
 
-Version: 0.8 | Date: 2026-11-13
-Status: Proposed with the shared v0.8 package.
+Version: 0.9 | Date: 2026-11-13
+Status: Adopted by the producer on 2026-11-13 with the shared v0.9 package.
 
 ## Session setup
 
@@ -19,8 +19,8 @@ Status: Proposed with the shared v0.8 package.
 
 ## Responsibilities
 
-- Lead assigns scope, resolves scheduling, inspects task-owned diffs, and commits. Integrate related finished tasks together where practical. Retained-risk tests can share one tester task per feature batch.
-- Implementers preserve ownership and tuning, and run their selected checks. They do not edit retained tests. Report a test/source disagreement with one reproduction.
+- Lead decides and records the core architecture (workflow.md §1), assigns scope, resolves scheduling, inspects task-owned diffs, and commits. Integrate related finished tasks together where practical. Retained-risk tests can share one tester task per feature batch.
+- Implementers build within the recorded architecture, preserve ownership and tuning, and run their selected checks. They do not edit retained tests. Report a test/source disagreement with one reproduction.
 - systems may install already-approved exact dependencies within assigned paths. Use optional `deps` only for substantial independent installation work; a one-command install does not need another agent.
 - Route candidates to tester/reviewer at declared integration/milestone points, not every cosmetic or tuning commit.
 
@@ -34,4 +34,4 @@ When implemented and verified on the installed client, the hook checks records o
 
 ## Recovery
 
-After context loss, read the checkpoint, relevant changes since its base revision, and active ownership. Reload only invalidated sections. Confirm that an old writer stopped before transferring its paths. Do not restart healthy teammates because they appear idle.
+After context loss, read the checkpoint, relevant changes since it was written, and active ownership. Reload only invalidated sections. Confirm that an old writer stopped before transferring its paths. Do not restart healthy teammates because they appear idle.
