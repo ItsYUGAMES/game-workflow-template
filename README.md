@@ -1,92 +1,169 @@
-# 工作流规范 v0.7
+# 游戏工作流模板 v0.8
 
-日期：2026-11-10。GDD 分两个阶段：开工用一页策划，持续开发用多篇细则文档，细则按内容分五类，各有模板。你确认采用后，它就成为项目规则。
+2026-11-13 由制作人采用。用途：多个 AI Agent 协作做轻量游戏，先做 Three.js 可玩原型，再做单独规划的 Godot 移植。
 
-## 相对 v0.6 改了什么（v0.7）
+这个仓库只有**规范与模板**：规则文档、GDD 模板和示例。它不包含游戏运行时、MCP/HTTP 服务、gate 脚本、hook 或任何素材，这些在每个项目的 M0 按需实现。
 
-| 改动 | 写进了哪里 |
+## 开一个新项目
+
+1. 用模板建仓库并克隆（参数已用 `gh repo create --help` 核对，这条命令本身没有在本仓库执行过）：
+
+   ```bash
+   gh repo create <项目名> --private --template ItsYUGAMES/game-workflow-template --clone
+   ```
+
+2. 填写 [一页策划](docs/gdd/one_page.md)，把整个游戏写在一页里，然后把它的 `status` 改成 `approved`。写法见 [GDD 写法说明](docs/templates/gdd_guide.md)，填好的例子见 [《守灯人》](docs/examples/gdd_example/one_page.md)。
+3. 核心机制在一页里写不清的规则，用 [玩法系统模板](docs/templates/gdd_system.md) 补一篇细则。
+4. 在 [AGENTS.md](AGENTS.md) 开头补三样：批准的一句话概念、实际的目录结构、验证过的运行命令和连接方式。
+5. 开 Agent 会话时说明它的角色，例如“你是 lead”。没有分到角色的会话会先问，不会自己动手。
+6. 让 lead 推进 M0：应用能跑，并且 AI 能直接连接游戏（见下面“AI 如何直接访问游戏”）。
+
+## 它怎样工作
+
+1. 每个会话先读简短的 AGENTS.md 和当前任务，再按任务补读相关章节；没变的内容不重读。
+2. M0 先打通 MCP 或简易 HTTP 接口，让 AI 能确认实例、读状态、执行动作、取得真实截图并关闭游戏。
+3. 默认只启用 lead 和当前功能的负责人。其他角色有独立工作时再启动，tester 按风险和集成批次介入。
+4. 一个任务覆盖一个完整的功能或资源批次，完成时交接一次。lead 负责提交和补 SHA。
+5. 普通改动做相关检查，功能批次跑受影响的测试，只有里程碑候选才跑完整 gate。
+6. 美术先定共同基准，再做一个代表性模型和动作，通过视觉验收后才扩展整套资源。
+7. 完整演示覆盖从开始到结束的路径；只给重要事件做关键帧，普通操作按区段描述。
+
+```mermaid
+flowchart TD
+  A[批准的玩法与美术基准] --> B[当前任务包]
+  B --> C[功能或资源批次]
+  C --> D{变化涉及的范围}
+  D -->|局部| E[相关检查与一次交接]
+  D -->|共享接口或高风险| F[受影响测试与集成检查]
+  E --> G[集成候选]
+  F --> G
+  G --> H{申请里程碑验收}
+  H -->|继续迭代| B
+  H -->|是| I[候选检查与实机演示]
+  I --> J[制作人验收具体版本]
+```
+
+## 你在每个里程碑验收什么
+
+以 [workflow](docs/workflow.md) §5 为准，这里只是摘要。
+
+| 里程碑 | 成果 | 开工前要批准的 GDD |
+| --- | --- | --- |
+| M0 | 应用和最小检查能跑；AI 能连接、读状态、执行动作、取到真实截图、关闭并重连；测试隔离、发行剔除和需要的调参保存已演示 | 一页策划 |
+| M1 | 核心动作用占位画面可玩，并通过接口暴露；`--simulate` 场景跑真实的模拟模块；有相关的风险检查 | 一页策划、核心玩法细则 |
+| M2 | 完整的开始、游戏、结束切片；代表性的外观与动作目标；重要事件有关键帧；参考视频和实机视频各覆盖整个切片 | 美术与音频、界面、代表性关卡 |
+| M3 | 批准的内容全部集成，模型和动画达到代表性质量；新的重要事件补关键帧 | 内容与进度、其余关卡 |
+| M4 | 约定的手感和性能标准通过；阻塞缺陷解决；演示路径稳定 | — |
+| M5 | 最终候选、完整实机视频、参考视频包、报告、来源记录、可移植导出 | — |
+
+M0 按事先列好的基础检查验收，不算完整 gate 通过；完整 gate 从 M1 起要求。你验收的是一个具体的提交，候选打 `snap/mN-k` 标签，验收后打 `snap/mN`，标签由你来打。
+
+## AI 如何直接访问游戏
+
+项目必须提供一条从实际 Agent 客户端到运行中游戏的通道。先在 **MCP 和简易本地 HTTP 里选一种**，以后需要第二种时再加一层薄适配。普通的 HTTP JSON 地址不等于 MCP 服务。
+
+| 能力 | 操作名 | AI 得到什么 |
+| --- | --- | --- |
+| 确认连接 | `game_status` | 游戏是否就绪、实例 ID、构建和数据版本、能力及限制 |
+| 读取状态 | `game_state` | 指定字段的状态快照 |
+| 执行动作 | `game_act` | 单个动作或有限的操作序列，以及执行后的观察结果 |
+| 查询动作结果 | `game_result` | 原命令是否执行、结果如何；超时后先查，不盲目重发 |
+| 取得画面 | `game_capture` | 游戏真实渲染的图像，以及 AI 能读取的文件或资源引用 |
+| 关闭实例 | `game_shutdown` | 只关闭本次测试实例，由启动器确认退出 |
+
+这些操作名是本项目的接口设计，不是 MCP 自带的工具。输入输出、生命周期、HTTP 路由和职责见 [游戏接口契约](docs/agent_interface.md)。
+
+M0 的证据必须来自实际的 Agent：连接 → 读状态 → 执行一个可观察的动作 → 确认响应 → 取得并查看截图 → 关闭，然后重启一次，确认是新实例、旧请求被拒绝。只装了 MCP、端口能访问、或返回一个 AI 读不到的图片路径，都不算打通。
+
+测试启动默认静音、不抢焦点、隔离存档和浏览器存储。语义命令成功不能证明鼠标点得到按钮，需要时由 harness 走真实输入链路。接口和调试代码在发行构建里剔除。接口能随时截图，不代表每次操作都要截图。
+
+## 四档验证
+
+| 档位 | 典型改动 | 完成时检查 |
+| --- | --- | --- |
+| docs | 规则、文档、提示词规格 | 相关一致性、引用与 diff |
+| local | 局部逻辑、静态美术、普通调参 | 本次相关的编译、数据或视觉检查 |
+| integration | 接口变化、时序规则、功能合并 | 受影响的测试，加一次 smoke |
+| milestone | 最终候选、对外提交的版本 | 完整 gate、完整实机演示、按风险审查 |
+
+档位按实际影响选：只改 JSON 的时序数据也可能需要 integration。复用旧结果要证明相关输入和环境没变；旧提交的完整 gate 不能算作新提交通过；没运行的检查标 `UNVERIFIED`。细则见 [validation](docs/validation.md)。
+
+## 美术与完整视频
+
+- **共同美术基准**写镜头、尺度、轮廓、配色、材质、光照和身份一致性，放在美术与音频策划案里，任务只引用它的版本。
+- **动作规格**写关键姿势、阶段、脚和手及道具的接触、位移与衔接，在游戏镜头下检查实际模型。
+- **关键帧只给重要事件**：核心机制的首次展示、明显不同的交互结果、重大的阶段或场景变化、胜负反馈、需要明确目标的复杂姿势。每个选中的事件写一句原因，至少配一张实际图片。
+- **两份视频覆盖同一条路径**：参考视频表达目标，实机录屏证明当前构建做到了什么，两者分别交付。
+- **两项覆盖分开检查**：完整路径是否走完，以及选中的重要事件是否都有图片；图片的分母只算选中的事件。
+
+M1 可以用占位画面，M2 的代表性切片开始验收美术目标。细则见 [assets_and_targets](docs/assets_and_targets.md) §6，填好的例子见 [守灯人演示示例](docs/examples/demo_workflow_example.md)。
+
+## 按任务找文件
+
+| 你要做什么 | 入口 |
 | --- | --- |
-| 细则文档分五类，各有模板：玩法系统、界面与流程、关卡、内容与进度、美术与音频；分别放在 `docs/gdd/` 下的 `systems/`、`ui/`、`levels/`、`content/`、`art/` | `docs/templates/gdd_*.md`、`docs/templates/gdd_guide.md` 一、三 |
-| 一页策划里的“系统与待定”改名为“细则与待定”，列出所有类型的细则 | `docs/gdd/one_page.md` |
-| M1 之后，每块要开发的内容（不只是玩法系统）都先写细则、批准后再拆任务；`docs/gdd/` 里文件名不能重复，`gdd:check` 检查重复编号 | `workflow.md` §5、`traceability.md` §1、§3 |
+| 配置 Agent 的常驻规则 | [AGENTS.md](AGENTS.md)（[CLAUDE.md](CLAUDE.md) 只引用它） |
+| Claude Code 原生任务与 hook | [Claude 适配说明](docs/claude_adapter.md) |
+| 建立 AI 直接访问游戏的接口 | [游戏接口契约](docs/agent_interface.md)、[连接记录模板](docs/templates/agent_connection.md) |
+| 分工、集成、里程碑与消息规则 | [workflow](docs/workflow.md) |
+| 架构、数据和编辑器约束，代码约定 | [contracts](docs/contracts.md) |
+| 选择本轮需要的验证 | [validation](docs/validation.md) |
+| 资产、动画、关键帧和完整视频 | [assets_and_targets](docs/assets_and_targets.md) |
+| 设计改动的影响分析、生成记录 | [traceability](docs/traceability.md) |
+| 给 Agent 发一个任务 | [任务包](docs/templates/task_packet.md) |
+| 中断后恢复 | [恢复记录](docs/templates/checkpoint.md) |
+| 写一页策划 | [一页策划](docs/gdd/one_page.md)、[GDD 写法说明](docs/templates/gdd_guide.md) |
+| 写细则文档 | [玩法系统](docs/templates/gdd_system.md)、[界面与流程](docs/templates/gdd_ui.md)、[关卡](docs/templates/gdd_level.md)、[内容与进度](docs/templates/gdd_content.md)、[美术与音频](docs/templates/gdd_art_audio.md) |
+| 写美术提示词和演示分镜 | [提示词模板](docs/templates/art_prompt.md)、[分镜模板](docs/templates/demo_storyboard.md) |
+| 看填好的例子 | [《守灯人》GDD](docs/examples/gdd_example/README.md)、[演示示例](docs/examples/demo_workflow_example.md) |
 
-## 相对 v0.5 改了什么（v0.6）
+模板里的文件名、图片、视频、时间码和状态都要填实际值。示例只说明格式，不是已批准的设计或已通过的验证。
 
-| 改动 | 写进了哪里 |
-| --- | --- |
-| 开工用**一页策划**：一句话、关键画面、玩法、体验、设定、范围、系统与待定，正文不超过 700 个汉字；M1 之后它作为总览和目录保持最新 | `docs/gdd/one_page.md` |
-| 持续开发用多篇两三页的系统策划案：M1 之后每个系统先写、批准后再拆任务，任务引用这篇文档；章节用一、二、/ 1.1 / 1. 编号，配流程图、状态图和示意图 | `docs/templates/gdd_system.md`、`workflow.md` §5 |
-| 编号从“每个段落一个”改成“每篇文档一个”（如 `GDD-RELIGHT@r2`），只放在文档开头的一小段信息里；正文不再有给工具看的字段 | `traceability.md` §1–3 |
-| 每篇文档有修改记录，写清改了哪一块、为什么；lead 按它判断返工范围 | `traceability.md` §1、§3 |
-| M1 前要写清的内容改为“一页策划 + 核心系统策划案合起来覆盖”；tester 没法据此写测试的规则，要写进系统策划案 | `workflow.md` §5、`docs/templates/gdd_guide.md` 六 |
-| 新增写法说明（依据 Librande 的一页设计、Unity 的一页 GDD 模板和国内系统策划案写法，出处附在文末）和一份填好的示例《守灯人》 | `docs/templates/gdd_guide.md`、`docs/examples/gdd_example/` |
-| 删除 v0.5 按领域拆分的 7 个 GDD 骨架文件 | `docs/gdd/` |
+## 相对 v0.7 的变化
 
-## 相对 v0.4 改了什么（v0.5）
+| 问题 | v0.8 的规则 | 主要位置 |
+| --- | --- | --- |
+| 多个角色重复读长文档 | 短入口，按任务读相关章节，修订没变就沿用 | AGENTS、workflow §3 |
+| AI 没法直接观察和操作游戏 | M0 必须提供 MCP 或简易 HTTP 接口 | agent_interface |
+| 常驻角色和往返过多 | 按需启动；deps 可选；一次交接；lead 补提交信息 | claude_adapter、workflow §1–4 |
+| 频繁打断 | 只有取消、会造成明显浪费的失效依赖、破坏或冲突风险才中断 | AGENTS、workflow §3 |
+| 每个任务、每次提交都跑 gate | 四档验证；hook 只检查记录 | validation §2–3 |
+| 每块内容都要先写细则 | 已有批准文档说不清的新功能才补细则 | workflow §5、gdd_guide |
+| 建模和动画效果一般 | 按需求选制作路线；先证明一个角色的造型、蒙皮和动作 | assets_and_targets §1–4 |
+| 生图、生视频的要求松散 | 共同基准 + 资源或动作规格 + 镜头差异；归档实际发送的完整提示词 | art_prompt、traceability §4 |
+| 视频不完整、关键帧过多 | 只给重要事件做关键帧；参考与实机各覆盖整条路径 | demo_storyboard、assets_and_targets §6 |
 
-| 改动 | 写进了哪里 |
-| --- | --- |
-| `combat` 队友改名为 `gameplay`，负责玩家动作和核心机制，不限于战斗；`src/combat/` 改为 `src/mechanics/` | `AGENTS.md`、`CLAUDE.md`、`workflow.md` §1–2、`contracts.md` §1、`assets_and_targets.md` §5 |
-| M1 不再写死"移动、闪避、三段攻击、木桩敌人"，改为"核心机制用占位画面可玩" | `workflow.md` §5 |
-| M1 前必须批准的 GDD 内容改为通用清单；类型专属的规则由你按需加成新段落 | `workflow.md` §5、`docs/gdd/index.md` |
-| GDD 段落新增 `status: draft / approved / retired` 和 `needed_by: <里程碑>`；`gdd:check -- --milestone <Mn>` 列出还没批准的段落 | `traceability.md` §1、§3 |
-| 保留测试的 `combat/` 文件夹改为 `mechanics/` | `validation.md` §1 |
-| 时钟、数值生效时机、角色动画状态的说明里，攻击相关的内容改成举例，并补上回合制的情况 | `contracts.md` §3–5、`assets_and_targets.md` §2 |
-| 新增 GDD 骨架：7 个领域、23 个段落，全部是 `draft`（v0.6 已替换） | `docs/gdd/` |
+没有变的：各角色的源码所有权、lead 提交、独立的 tester、制作人批准设计和里程碑、模拟与表现分离、受保护的调参，以及 Godot 阶段的中文注释和图文说明。
 
-技术栈（Three.js 原型 → Godot 移植）、角色分工、提交与 gate、证据和审查规则都没有变。
+这一版还改变了三项此前的做法：deps 子 Agent 从必用变为可选，不再给每张实现卡配一张测试卡，Agent 可以应要求直接起草 `docs/` 下的修改（批准仍由制作人做）。
 
-## 文件
+## 依据与证据边界
 
-| 文件 | 内容 |
-| --- | --- |
-| `AGENTS.md` | 所有 Agent 共用的入口：权限、必读文档、底线规则、完成与里程碑要求 |
-| `CLAUDE.md` | Claude Code 专用：角色与模型、启动核对、lead / 队友 / deps 的职责、完成钩子 |
-| `docs/workflow.md` | 角色、目录所有权、任务记录、提交与 gate、里程碑 |
-| `docs/contracts.md` | 代码分层、core 变更规则、时钟、命名单位、编辑器保存与热更新 |
-| `docs/assets_and_targets.md` | 资产规范、Blender、灯光特效、目标包、Godot 交接 |
-| `docs/validation.md` | 保留测试、gate 与钩子、完成定义、证据、审查、性能 |
-| `docs/traceability.md` | 新增：GDD 编号与 `gdd_refs`、影响分析、提示词归档 |
-| `docs/gdd/one_page.md` | 一页策划空白稿，直接填写；`systems/`、`ui/`、`levels/`、`content/`、`art/` 放各类细则文档 |
-| `docs/templates/gdd_guide.md` | GDD 写法说明：文档组成、编号、写法要点、M1 前要写清什么、批准前自查 |
-| `docs/templates/gdd_system.md` | 细则模板：玩法系统 |
-| `docs/templates/gdd_ui.md` | 细则模板：界面与流程 |
-| `docs/templates/gdd_level.md` | 细则模板：关卡 |
-| `docs/templates/gdd_content.md` | 细则模板：内容与进度 |
-| `docs/templates/gdd_art_audio.md` | 细则模板：美术与音频 |
-| `docs/examples/gdd_example/` | 填好的 GDD 示例《守灯人》：一页策划、三篇玩法系统策划案、关键画面和示意图 |
+四档验证、一次交接、批次化任务是针对 v0.7 规则的工程调整；重要事件关键帧和优先建立游戏接口来自制作人的要求，并吸收了制作人提供的《给AI的搭建说明》。**没有用真实项目做过对照**，Token、速度、返工率和美术效果的改善都还没有测量。文件变短不等于费用下降。
 
-入口文件和契约文档按你的全局约定用英文写。GDD、任务说明、handoff、审查报告、说明文档可以用中文。
+要判断是否真的省了：对同类的功能批次各记录一次模型、缓存与未缓存的输入、输出、工具调用、Agent 消息、上下文重读、验证次数、耗时和返工，缺的指标写 `unknown`，在同等完成质量下比较。
 
-## 相对 v0.3 改了什么
+公开参考只提供了部分模式，链接固定在具体版本：
 
-**你的决定**
+| 参考 | 借鉴的模式 | 不能据此得出的结论 |
+| --- | --- | --- |
+| [gamedev-skills router](https://github.com/gamedev-skills/awesome-gamedev-agent-skills/blob/c6ca6c41c839b68319ffc08430b99ab768debc32/router/SKILL.md) | 选最小的相关技能集，按需读参考 | 本项目的费用会下降 |
+| [归藏 game skill](https://github.com/op7418/guizang-game-skill/blob/6001e56e1eaa60be49e5aa4ef81d08b746a1b4e2/SKILL.md) | 分阶段交付，用实际画面和操作验证 | 减少验证频率是有效的（原文要求每次改动后载入检查） |
+| [Godot Game Harness](https://github.com/jonathancaruso/godot-game-harness/blob/8f4fdf4262b6697f6aacf051c0f927744d81e263/HARNESS.md) | 可重复的逻辑检查与画面观察循环 | 四档频率和重要事件选帧（原文每次改动后都重复检查） |
 
-| 决定 | 写进了哪里 |
-| --- | --- |
-| 写源码的是三个 Claude 队友 | `AGENTS.md` 权限部分、`workflow.md` §1，并写明它优先于本机的全局默认 |
-| 测试由独立的 GPT Agent 负责 | 新增 `tester`（Codex，GPT-6 Astra，high）：写全部保留测试、管 gate 和完成钩子、性能测量工具。实现者不改测试，tester 不改被测源码。需要保留测试的任务，lead 同时开一张配对的测试卡；测试失败时由 lead 转成修复任务交给实现者 |
-| Git 提交由 lead 负责 | lead 是唯一的提交者：角色写完 handoff 后告诉 lead，lead 用 `commit:task` 只暂存该任务的路径、核对 diff、提交并带上 `Task: <ID>` 标记，再把 SHA 回报给角色。完成钩子靠这个标记找到提交 |
-| 依赖安装交给更低级的模型 | 新增 `deps` 子 Agent（`claude-haiku-5-5`），只改依赖项和锁文件，不提交；由 lead 批准、systems 调用，lead 提交 |
-| Claude 以 Agent Teams 任务列表为准，Codex 每张卡一个文件、状态写在卡里 | `workflow.md` §3；去掉了 v0.3 的事件日志和 `codex_queue.md` |
-| 完整证据清单只给时序和性能任务 | 任务卡新增 `timing_or_performance` 字段；`validation.md` §4 |
-| 只改 `data/` 的提交跑一遍 gate 就够，行为变化才交给 reviewer | `workflow.md` §4、`validation.md` §5 |
-| 只保留连招窗口、编辑器冲突这类测试，放在独立文件夹 | 统一放在 `tests/regression/<领域>/`，列明八类可保留的测试；各角色自己的检查放在不入库的 `tmp/probes/`，完成前删除；gate 会检查文件位置 |
-| GDD 编号与 `gdd_refs` | 新增 `traceability.md` §1–3：段落编号永不复用、引用带版本号、`gdd:impact` 找出受影响的任务和资产 |
-| 提示词归档 | `traceability.md` §4：每次生成（包括被否决的）都记录模型版本、完整提示词、参数、参考图哈希、时间、验收状态 |
-| Godot 代码带中文注释，并有图文说明 | `assets_and_targets.md` §7：GDScript 注释用中文；每个系统一份带 Mermaid 图和编辑器截图的中文说明，改代码时同步更新 |
+## 还没有实现的
 
-**我额外做的调整**
+- 游戏的 MCP/HTTP 服务、`npm run run-game`、gate、hook 适配器、提交助手、资产校验、`gdd:check` 和 `gdd:impact` 都只是待实现的接口约定。
+- 完成钩子在 Claude Code 上的拦截行为（只有退出码 2 拦截等）来自 v0.7 的记录，要在 M0 用实际客户端重新验证。
+- 外部生成工具的能力、模型是否可用、预算和实际视觉效果，都要在具体项目里验证。
+- 已经在用 v0.7 的项目：旧的 TaskCompleted hook 要改成只读记录；已有的配对测试可以合并到功能批次，但覆盖不能丢。
 
-- **不再暂停写入：** 去掉 v0.3 里"所有人暂停写入"的集成窗口。lead 只提交该任务的路径，gate 在单独的 gate worktree 里对这个提交运行，一次一个排队，所以其他角色可以继续写。
-- **systems 减负：** 提交交给 lead，gate 和测试交给 tester，依赖安装交给 deps；systems 保留 core、游戏循环、UI、编辑器框架、组装入口和提交脚本。
-- **完成钩子：** 写明只有退出码 2 能拦住任务；超时、崩溃、其他退出码都会放行；退出码 2 但 stderr 是"文件不存在"也会放行。适配器必须自己处理这三种情况。
-- **成本相关条款：** 按你"不考虑额度"的要求，删掉了 v0.3 里的成本上限和"费用要问制作人"。
+## 版本记录
 
-v0.3 中保留不变的部分：代码分层与状态视图、core 的兼容性变更规则、数值生效时机（`next_tick` / `next_action` / `rebuild` / `restart`）、编辑器保存冲突检测、按资产种类区分的规格、目标包的时间字段、性能测量口径、审查报告格式。
-
-## 还没有做的
-
-- 这是规范文档，没有实现提交脚本、gate、钩子适配器、编辑器、`gdd:impact`、deps 定义文件、tester 的角色卡或游戏代码。这些在 M0 由对应角色完成，`validation.md` §7 列出了要演练的步骤。
-- 没有在真实环境里验证 Agent Teams 队友能否调用子 Agent。如果不能，按规则由 lead 调用 deps。
-- `docs/gdd/` 只有一页策划空白稿和五个空的细则目录，细则文档按需要用模板新建。性能测量设备需要你在用到之前定下来。
+| 版本 | 日期 | 内容 |
+| --- | --- | --- |
+| v0.8 | 2026-11-13 | 精简协作流程；M0 必须有 AI 直连游戏的接口；四档验证；重要事件关键帧与两份完整视频 |
+| v0.7 | 2026-11-10 | 细则文档分五类，各有模板 |
+| v0.6 | 2026-11-10 | GDD 改为“一页策划 + 细则文档”，编号改为每篇文档一个 |
+| v0.5 | 2026-11-10 | 规则不再预设游戏类型；`combat` 角色改名为 `gameplay` |
+| v0.4 | 2026-11-10 | 初版：角色分工、lead 提交、独立 tester、GDD 追踪、提示词归档 |
